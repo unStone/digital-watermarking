@@ -3,3 +3,15 @@
   font-weight: bold;
   padding: 16px;
 }
+
+.canvas-content {
+  position: relative;
+}
+
+#canvas-water-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.01;
+  letter-spacing: 22px;
+}
