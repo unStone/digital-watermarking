@@ -38,14 +38,12 @@ window.onload = function() {
       canvas.width = width;
       canvas.height = height;
       ctx.drawImage(imgElement, 0, 0);
-      addWaterMark(ctx, 200, 0)
+      addWaterMark(ctx, 0, 0)
 
-      
       canvasWaterMark.width = width;
       canvasWaterMark.height = height;
-
       // 添加简单水印
-      addWaterMark(ctxWaterMark, 0, 0);
+      addWaterMark(ctxWaterMark, 200, 20);
     })
   }
 }
