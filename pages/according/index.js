@@ -32,7 +32,7 @@ window.onload = function() {
   const ctxWaterMark = canvasWaterMark.getContext("2d");
   const input = document.querySelector("input[type=file]");
   input.onchange = function () {
-    getImageWH(null, this.files[0], (err, data) => {
+    getImageInfo(null, this.files[0], (err, data) => {
       if (err) return console.error('获取图片框高失败', err)
       const { width, height, imgElement } = data;
       canvas.width = width;

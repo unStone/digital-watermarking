@@ -1,5 +1,5 @@
 // 获取图片的框高，支持地址或文件类型
-function getImageWH (src, file, callback) {
+function getImageInfo (src, file, callback) {
   let currentSrc = null;
   const img = new Image();
   if(typeof src === 'string') {
