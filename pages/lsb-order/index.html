@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <script src="../utils.js"></script>
+        <script src="index.js"></script>
+    </head>
+    <body>
+        <p>
+            水印内容：
+            <input placeholder="输入英文或数字" type="text" id="waterMark"/>
+        </p>
+        <p>
+            请选择要输入水印的图片
+            <input type="file" name="file" id="encodeInput"/>
+        </p>
+        <p>
+            处理后的图片：<canvas id="encodeCanvas"></canvas>
+        </p>
+        <p>
+            请选择要解析水印的图片
+            <input type="file" name="file" id="decodeInput"/>
+        </p>
+        <p>
+            解析图片：<canvas id="decodeImageCanvas"></canvas>
+            解析出来的水印信息为：<span id="decodeText"></span>
+        </p>
+    </body>
+</html>
