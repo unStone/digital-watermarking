@@ -2,16 +2,40 @@
 <html>
     <head>
         <title></title>
+        <style type="text/css">
+            img {
+                height: 300px;
+            }
+            .process {
+                color: #d33e86;
+            }
+        </style>
+        <script src="https://file.yzcdn.cn/upload_files/yz-file/2021/12/29/lrnriiER0KMoYZSKFh6Zut7PeZBj.js"></script>
     </head>
 <body>
 <div id="root">
-    <input type="text" id="waterMark"/>
-    <input type="file" name="file" id="encodeInput"/>
-    <div id="encodeInputImg"></div>
-    <div id="encodeImg"></div>
-    <input type="file" name="file" id="decodeInput"/>
-    <div id="decodeInputImg"></div>
-    <div id="decodeImg"></div>
+    <p>
+        水印内容：
+        <input placeholder="输入英文或数字" type="text" id="waterMark"/>
+    </p>
+    <p>
+        请选择要输入水印的图片
+        <input type="file" name="file" id="encodeInput"/>
+    </p>
+    <p>
+        <p id="encodeProcess" class="process"></p>
+        处理前：<span id="encodeInputImg"></span>
+        处理后：<span id="encodeImg"></span>
+    </p>
+    <p>
+        请选择要解析水印的图片
+        <input type="file" name="file" id="decodeInput"/>
+    </p>
+    <p>
+        <p id="decodeProcess" class="process"></p>
+        解析前：<span id="decodeInputImg"></span>
+        解析后：<span id="decodeImg"></span>
+    </p>
 </div>
 <script src="./webpack.bundle.js"></script>
 </body>
