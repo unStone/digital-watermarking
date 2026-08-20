@@ -35,7 +35,7 @@
     <script src='./index.js' type='text/javascript'></script>
 </head>
 <body>
-    <header data-topbar="../../"></header>
+    <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
     <script>document.addEventListener('DOMContentLoaded', function () { UI.mountTopbar(''); });</script>
     <h1>LSB 隐写 · 口令加密</h1>
     <div id='about' class='section'>
@@ -76,6 +76,8 @@
     <canvas id='canvas' class='hide'></canvas>
     <div class='section'><img id='output' /></div>
     <footer class="site" style="max-width:640px;margin:0 auto;text-align:left">
+      <nav class="site-nav" aria-label="全部工具"><a href="../../pages/ai-text/">AI 文本痕迹检测</a><a href="../../pages/c2pa/">C2PA 内容凭证读取器</a><a href="../../pages/text/">文本隐形水印</a><a href="../../pages/according/">明水印与全屏无痕水印</a><a href="../../pages/exif/">EXIF 元信息</a><a href="../../pages/lsb-order/">LSB 顺序编码</a><a href="../../pages/lsb-img/">LSB 图形通道</a><a href="../../pages/lsb-encryption/">LSB 口令加密</a><a href="../../pages/fft/">频域盲水印</a></nav>
+      
         图片不会上传 · <a href="../../">返回首页</a> ·
         <a href="../lsb-order/">对比不加密的 LSB 顺序编码</a>
     </footer>

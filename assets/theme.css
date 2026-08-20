@@ -281,3 +281,8 @@ footer.site {
   margin-top: 56px; padding-top: 20px;
   font-size: 12.5px; color: var(--text-dim);
 }
+
+/* 页脚全站导航：既方便读者跳转，也让爬虫一次拿到完整链接图 */
+.site-nav { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 14px; }
+.site-nav a { color: var(--text-soft); font-size: 12.5px; }
+.site-nav a:hover { color: var(--accent); }

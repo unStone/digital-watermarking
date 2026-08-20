@@ -50,10 +50,13 @@
     }, 'image/png');
   }
 
-  /** 顶部导航，所有页面共用 */
+  /**
+   * 顶部导航。页面里已经写成静态 HTML 了（Googlebot 首轮抓取就要能看到链接），
+   * 这里只在没有静态导航时兜底渲染一次。
+   */
   function mountTopbar(current) {
     const root = document.querySelector('[data-topbar]');
-    if (!root) return;
+    if (!root || root.children.length) return;
     const base = root.getAttribute('data-topbar') || './';
     const links = [
       ['c2pa/', '内容凭证'],
