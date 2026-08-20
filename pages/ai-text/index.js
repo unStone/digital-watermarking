@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const { $, toast, copy, mountTopbar } = UI;
+  const { $, toast, copy } = UI;
   const I = Invisible;
 
   const el = {};
@@ -138,7 +138,6 @@
   }
 
   window.addEventListener('DOMContentLoaded', function () {
-    mountTopbar('ai-text/');
     ['input', 'result', 'stats', 'payloads', 'groups', 'preview', 'extra', 'clean'].forEach((id) => {
       el[id] = document.getElementById(id);
     });

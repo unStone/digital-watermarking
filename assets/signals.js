@@ -2,8 +2,8 @@
 (function () {
   'use strict';
 
-  const fields = Array.from(document.querySelectorAll('.atlas-visual'));
-  if (!fields.length) return;
+  const scenes = Array.from(document.querySelectorAll('.hero-visual, .atlas-visual'));
+  if (!scenes.length) return;
 
   function syncVisibility() {
     document.documentElement.classList.toggle('motion-page-hidden', document.hidden);
@@ -18,7 +18,7 @@
       },
       { rootMargin: '120px 0px' },
     );
-    fields.forEach((field) => observer.observe(field));
+    scenes.forEach((scene) => observer.observe(scene));
   }
 
   document.addEventListener('visibilitychange', syncVisibility);

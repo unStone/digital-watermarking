@@ -203,7 +203,7 @@
   background: color-mix(in srgb, var(--bg-soft) 76%, transparent);
 }
 .principle-card--dark .atlas-visual { border-color: rgba(136, 181, 225, .13); background: #061225; }
-.atlas-visual.motion-paused *, .motion-page-hidden .atlas-visual * { animation-play-state: paused !important; }
+.motion-paused *, .motion-page-hidden .hero-visual *, .motion-page-hidden .atlas-visual * { animation-play-state: paused !important; }
 
 .token-field { background-image: radial-gradient(circle at 60% 55%, rgba(54, 225, 234, .12), transparent 33%), linear-gradient(rgba(124, 183, 230, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 183, 230, .045) 1px, transparent 1px); background-size: auto, 26px 26px, 26px 26px; }
 .token-field svg { position: absolute; inset: 0; width: 100%; height: 100%; }

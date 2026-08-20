@@ -57,7 +57,6 @@ function revealBitPlane(ctx, dataWrap, color) {
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-  UI.mountTopbar('lsb-img/');
 
   const waterMark = document.getElementById('waterMark');
   const channelSelect = document.getElementById('channel');

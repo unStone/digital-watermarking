@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const { $, toast, copy, mountTopbar } = UI;
+  const { $, toast, copy } = UI;
   const I = Invisible;
 
   const SCHEME_LABEL = { zerowidth: '零宽字符', vs: '变体选择符', tag: 'Unicode Tag' };
@@ -55,7 +55,6 @@
   }
 
   window.addEventListener('DOMContentLoaded', function () {
-    mountTopbar('text/');
 
     $('#btn-embed').onclick = embed;
     $('#btn-copy').onclick = function () { copy($('#output').value, '带水印文本已复制'); };

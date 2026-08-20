@@ -51,7 +51,6 @@ function fileToImageElement(file) {
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-  UI.mountTopbar('fft/');
 
   const waterMark = document.getElementById('waterMark');
   const fontSizeInput = document.getElementById('fontSize');

@@ -50,35 +50,5 @@
     }, 'image/png');
   }
 
-  /**
-   * 顶部导航。页面里已经写成静态 HTML 了（Googlebot 首轮抓取就要能看到链接），
-   * 这里只在没有静态导航时兜底渲染一次。
-   */
-  function mountTopbar(current) {
-    const root = document.querySelector('[data-topbar]');
-    if (!root || root.children.length) return;
-    const base = root.getAttribute('data-topbar') || './';
-    const links = [
-      ['c2pa/', '内容凭证'],
-      ['ai-text/', 'AI 文本检测'],
-      ['text/', '文本水印'],
-      ['according/', '图片水印'],
-      ['fft/', '频域水印'],
-    ];
-    root.className = 'topbar';
-    root.innerHTML =
-      '<a class="brand" href="' + base + '">数字水印实验室</a>' +
-      '<span class="spacer"></span>' +
-      '<nav>' +
-      links
-        .map(([href, label]) =>
-          href === current
-            ? '<a href="' + base + 'pages/' + href + '" aria-current="page">' + label + '</a>'
-            : '<a href="' + base + 'pages/' + href + '">' + label + '</a>'
-        )
-        .join('') +
-      '</nav>';
-  }
-
-  global.UI = { $, $$, toast, copy, downloadCanvas, mountTopbar };
+  global.UI = { $, $$, toast, copy, downloadCanvas };
 })(window);

@@ -17,7 +17,6 @@ function readable(tag) {
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-  UI.mountTopbar('exif/');
 
   const fileInput = document.getElementById('file');
   const stripBtn = document.getElementById('strip');

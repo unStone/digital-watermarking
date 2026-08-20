@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const { $, toast, mountTopbar } = UI;
+  const { $, toast } = UI;
 
   const ACTION_LABEL = {
     'c2pa.created': '创建',
@@ -182,7 +182,6 @@
   }
 
   window.addEventListener('DOMContentLoaded', function () {
-    mountTopbar('c2pa/');
 
     $('#file').onchange = function () { handleFile(this.files[0]); };
 

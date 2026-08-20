@@ -53,7 +53,6 @@ function readWatermark(data) {
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-  UI.mountTopbar('lsb-order/');
 
   const waterMark = document.getElementById('waterMark');
   const encodeInput = document.getElementById('encodeInput');

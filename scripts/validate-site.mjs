@@ -73,6 +73,34 @@ function structuredItems(value) {
   return Array.isArray(value?.['@graph']) ? value['@graph'] : [value];
 }
 
+function headingLevels(source) {
+  return [...source.matchAll(/<h([1-6])\b/gi)].map((match) => Number(match[1]));
+}
+
+function localTargets(file, source) {
+  const targets = new Set();
+  for (const match of source.matchAll(/<a\b[^>]*\shref=(?:"([^"]*)"|'([^']*)')[^>]*>/gi)) {
+    const target = resolveLocalLink(file, match[1] ?? match[2]);
+    if (target && normalize(target).startsWith(root)) targets.add(relative(root, target));
+  }
+  return targets;
+}
+
+function structuredIdentities(source) {
+  const identities = new Set();
+  for (const block of source.matchAll(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi)) {
+    try {
+      for (const item of structuredItems(JSON.parse(block[1]))) {
+        identities.add(`${item?.['@type'] ?? ''}|${item?.['@id'] ?? item?.name ?? ''}`);
+        for (const entity of item?.mainEntity ?? []) identities.add(`Question|${entity.name ?? ''}`);
+      }
+    } catch {
+      // 主校验循环会报告 JSON 语法错误。
+    }
+  }
+  return identities;
+}
+
 function resolveLocalLink(file, href) {
   const clean = href.split('#')[0].split('?')[0];
   if (!clean || /^(?:[a-z]+:|\/\/|#)/i.test(href)) return null;
@@ -97,6 +125,19 @@ for (const file of pages) {
       for (const [name, pattern] of seoFields) {
         if (previous.match(pattern)?.[1] !== html.match(pattern)?.[1]) fail(file, `${name} 与 ${baseline} 不一致`);
       }
+      const previousLevels = new Set(headingLevels(previous));
+      const currentLevels = new Set(headingLevels(html));
+      for (const level of previousLevels) {
+        if (!currentLevels.has(level)) fail(file, `标题层级 h${level} 相比 ${baseline} 丢失`);
+      }
+      const currentTargets = localTargets(file, html);
+      for (const target of localTargets(file, previous)) {
+        if (!currentTargets.has(target)) fail(file, `内部链接目标相比 ${baseline} 丢失：${target}`);
+      }
+      const currentStructured = structuredIdentities(html);
+      for (const identity of structuredIdentities(previous)) {
+        if (!currentStructured.has(identity)) fail(file, `JSON-LD 实体相比 ${baseline} 丢失：${identity}`);
+      }
     } catch (error) {
       fail(file, `无法读取基线 ${baseline}：${error.message.split('\n')[0]}`);
     }
@@ -115,6 +156,10 @@ for (const file of pages) {
   if (!html.includes(`href="${expectedRoot}layout.css"`) && !html.includes(`href='${expectedRoot}layout.css'`)) fail(file, '未接入 layout.css');
   if (!html.includes(`href="${expectedRoot}signals.css"`) && !html.includes(`href='${expectedRoot}signals.css'`)) fail(file, '未接入 signals.css');
   if (count(html, /<h1\b/gi) !== 1) fail(file, '必须且只能有一个 h1');
+  const levels = headingLevels(html);
+  for (let index = 1; index < levels.length; index += 1) {
+    if (levels[index] > levels[index - 1] + 1) fail(file, `标题层级从 h${levels[index - 1]} 跳到 h${levels[index]}`);
+  }
   if (!/<header\s+class="topbar"/i.test(html)) fail(file, '缺少静态 topbar');
   if (!/<main\b/i.test(html)) fail(file, '缺少 main');
   if (!/<footer\s+class="site"/i.test(html)) fail(file, '缺少全站 footer');

@@ -71,7 +71,6 @@ function stretchLevels(source, target, black, white) {
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-  UI.mountTopbar('according/');
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
