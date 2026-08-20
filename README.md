@@ -100,6 +100,8 @@ flowchart LR
 ├── index.html              首页
 ├── 404.html                GitHub Pages 404
 ├── robots.txt / sitemap.xml
+├── .nojekyll               按静态文件原样发布，不走 Jekyll
+├── google*.html            Google Search Console 验证文件，勿删（删了验证会失效）
 ├── assets/
 │   ├── theme.css           全站设计系统（深浅色自动跟随系统）
 │   ├── ui.js               toast / 复制 / PNG 导出 / 顶部导航
