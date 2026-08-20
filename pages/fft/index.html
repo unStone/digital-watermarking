@@ -1,43 +1,151 @@
-<!DOCTYPE HTML>
-<html>
-    <head>
-        <title></title>
-        <style type="text/css">
-            img {
-                height: 300px;
-            }
-            .process {
-                color: #d33e86;
-            }
-        </style>
-        <script src="https://file.yzcdn.cn/upload_files/yz-file/2021/12/29/lrnriiER0KMoYZSKFh6Zut7PeZBj.js"></script>
-        <script src="./lib.js"></script>
-        <script src="./index.js"></script>
-    </head>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>频域盲水印在线工具（FFT）｜抗压缩抗截屏的图片水印</title>
+<!-- seo:start -->
+  <meta name="description" content="对图像做离散傅里叶变换，把水印写进频谱再逆变换回去。水印摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。">
+  <meta name="keywords" content="频域水印,盲水印,FFT 水印,傅里叶水印,抗截屏水印,抗压缩,opencv.js">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/fft/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="频域盲水印在线工具（FFT）｜抗压缩抗截屏的图片水印">
+  <meta property="og:description" content="对图像做离散傅里叶变换，把水印写进频谱再逆变换回去。水印摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/fft/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="频域盲水印在线工具（FFT）｜抗压缩抗截屏的图片水印">
+  <meta name="twitter:description" content="对图像做离散傅里叶变换，把水印写进频谱再逆变换回去。水印摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
+</head>
 <body>
-<div id="root">
-    <p>
-        水印内容：
-        <input placeholder="输入英文或数字" type="text" id="waterMark"/>
-    </p>
-    <p>
-        请选择要输入水印的图片
-        <input type="file" name="file" id="encodeInput"/>
-    </p>
-    <p>
-        <p id="encodeProcess" class="process"></p>
-        处理前：<span id="encodeInputImg"></span>
-        处理后：<span id="encodeImg"></span>
-    </p>
-    <p>
-        请选择要解析水印的图片
-        <input type="file" name="file" id="decodeInput"/>
-    </p>
-    <p>
-        <p id="decodeProcess" class="process"></p>
-        解析前：<span id="decodeInputImg"></span>
-        解析后：<span id="decodeImg"></span>
-    </p>
-</div>
+  <header data-topbar="../../"></header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>频域盲水印（FFT）</h1>
+      <p>
+        对图像做离散傅里叶变换，把水印文字对称地写进频谱，再逆变换回空域。
+        水印被摊到了全图的频率成分里，裁剪、缩放、压缩、甚至截屏都很难把它抹干净——
+        这是这一页和 LSB 最本质的区别。
+      </p>
+    </div>
+
+    <div class="note">
+      本页依赖 <code>opencv.js</code>（约 11 MB），首次使用时才按需下载，请耐心等一下。
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">嵌入</h2>
+      <div class="cols">
+        <div class="field">
+          <label for="waterMark">水印文字（建议英文或数字，中文字形依赖系统字体）</label>
+          <input type="text" id="waterMark" value="unStone" placeholder="输入水印">
+        </div>
+        <div class="field">
+          <label for="fontSize">字号系数 <span id="fontSize-v" class="cp">1.1</span></label>
+          <input type="range" id="fontSize" min="0.5" max="3" step="0.1" value="1.1">
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label for="encodeInput">选择原图</label>
+        <input type="file" id="encodeInput" accept="image/*">
+      </div>
+      <p class="muted" id="encodeProcess" style="margin:12px 0 0"></p>
+      <div class="cols" style="margin-top:14px">
+        <div class="figure">
+          <p class="muted">处理前</p>
+          <div class="canvas-box" id="encodeInputImg"></div>
+        </div>
+        <div class="figure">
+          <p class="muted">处理后</p>
+          <div class="canvas-box" id="encodeImg"></div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn--primary" id="downloadEncode" disabled>下载带水印的 PNG</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">提取</h2>
+      <p class="muted" style="margin-top:0">解析的是频谱图，水印会以镜像对称的形式出现在图的上下两侧。</p>
+      <div class="field">
+        <label for="decodeInput">选择带水印的图片</label>
+        <input type="file" id="decodeInput" accept="image/*">
+      </div>
+      <p class="muted" id="decodeProcess" style="margin:12px 0 0"></p>
+      <div class="cols" style="margin-top:14px">
+        <div class="figure">
+          <p class="muted">解析前</p>
+          <div class="canvas-box" id="decodeInputImg"></div>
+        </div>
+        <div class="figure">
+          <p class="muted">频谱（水印在这里）</p>
+          <div class="canvas-box" id="decodeImg"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site">图片不会上传，opencv.js 由 CDN 提供 · <a href="../../">返回首页</a></footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="./lib.js"></script>
+  <script src="./index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/fft/#app",
+   "name": "频域盲水印",
+   "url": "https://unstone.github.io/digital-watermarking/pages/fft/",
+   "description": "对图像做离散傅里叶变换，把水印写进频谱再逆变换回去。水印摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/fft/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "频域盲水印",
+     "item": "https://unstone.github.io/digital-watermarking/pages/fft/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
 </body>
 </html>

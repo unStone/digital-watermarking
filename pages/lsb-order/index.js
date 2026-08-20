@@ -1,107 +1,113 @@
-function drawAndGetCanvasTextData(ctx, text, width, height) {
-  ctx.font = '30px Microsoft Yahei';
-  ctx.fillText(text, 60, 130);
-  return ctx.getImageData(0, 0, width, height);
+/**
+ * LSB 隐写 · 顺序编码
+ * 数据格式：8 bit 长度头（字符数，最多 255） + 每字符 16 bit（UTF-16 码元）
+ * 逐个「可用位」写入 R/G/B 的最低有效位，alpha 通道跳过不动
+ */
+
+const HEADER_BITS = 8;
+const CHAR_BITS = 16;
+const MAX_CHARS = 255;
+
+/** 把水印文本转成比特串 */
+function buildBitString(text) {
+  const body = Array.from(text)
+    .map((ch) => zeroFill(encodeText(ch), CHAR_BITS))
+    .join('');
+  return zeroFill(radix10to2(Array.from(text).length), HEADER_BITS) + body;
 }
 
-function drawAndGetCanvasImageData(ctx, imgElement, width, height) {
-  console.log('ctx, imgElement, width, height', ctx, imgElement, width, height);
-  ctx.drawImage(imgElement, 0, 0);
-  return ctx.getImageData(0, 0, width, height)
-}
-
-// 长度偏移量
-function offset(num) {
-  return Math.floor(num / 3) * 4 + num % 3;
-}
-
-function getProcessData(originalData){
-  const sliceOffset = offset(8);
-  const lenthData = originalData.slice(0, sliceOffset);
-  let lenthText = '';
-  let dataText = ''
-  for(let i = 0; i < lenthData.length ; i++) {
-    if(i % 4 !== 3){
-      lenthText += lenthData[i] % 2 === 0 ? '0' : '1';
+/** 按比特串改写 ImageData 的最低有效位 */
+function writeBits(imageDataWrap, bits) {
+  const data = imageDataWrap.data;
+  for (let i = 0; i < bits.length; i++) {
+    const pos = bitIndexToDataIndex(i);
+    const isOdd = data[pos] % 2 === 1;
+    if (bits[i] === '0' && isOdd) {
+      data[pos] += data[pos] === 255 ? -1 : 1;
+    } else if (bits[i] === '1' && !isOdd) {
+      data[pos] += 1;
     }
   }
-
-  const dataLength = radix2to10(lenthText);
-  for(let i = lenthData.length; i <= lenthData.length + offset(dataLength * 16); i++){
-    if(i % 4 !== 3){
-      dataText += originalData[i] % 2 === 0 ? '0' : '1';
-    }
-  }
-  let text = ''
-  for(let i = 0; i < dataText.length; i+=16) {
-    text += decodeText(dataText.slice(i, i + 16));
-  }
-  return text
 }
 
-const mergeData = function(ctx, imageDataWrap, waterMarkText){
-  const waterMark = waterMarkText.split('').reduce((pre, current) => pre + zeroFill(encodeText(current), 16), '');
-  if (waterMarkText.length > 256) return alert('不能大于256字节');
-  const markData = zeroFill(radix10to2(waterMarkText.length), 8) + waterMark;
-  console.log('zeroFill(radix10to2(waterMarkText.length), 8)', zeroFill(radix10to2(waterMarkText.length), 8));
-  console.log('waterMark', waterMark);
-  console.log('markData', markData);
-  const imageData = imageDataWrap.data;
-  let pos = -1;
-  for (let i = 0; i < markData.length; i++) {
-    pos++;
-    if (pos % 4 === 3) {
-      pos++;
+/** 从 ImageData 读回水印文本 */
+function readWatermark(data) {
+  const readBits = (from, count) => {
+    let bits = '';
+    for (let i = from; i < from + count; i++) {
+      const pos = bitIndexToDataIndex(i);
+      if (pos >= data.length) break;
+      bits += data[pos] % 2 === 0 ? '0' : '1';
     }
-    if (markData[i] === '0' && (imageData[pos] % 2 === 1)) {
-      // 没有水印信息的像素，将其对应通道的值设置为偶数
-      if(imageData[pos] === 255){
-        imageData[pos]--;
-      } else {
-        imageData[pos]++;
-      }
-    } else if (markData[i] !== '0' && (imageData[pos] % 2 === 0)){
-      // 有水印信息的像素，将其对应通道的值设置为奇数
-      imageData[pos]++;
-    }
+    return bits;
+  };
+
+  const length = radix2to10(readBits(0, HEADER_BITS));
+  if (!length) return '';
+
+  let text = '';
+  for (let i = 0; i < length; i++) {
+    text += decodeText(readBits(HEADER_BITS + i * CHAR_BITS, CHAR_BITS));
   }
-  console.log(imageData.slice(0, 100))
-  ctx.putImageData(imageDataWrap, 0, 0);
+  return text;
 }
 
-window.onload = function() {
-  const waterMark = document.getElementById("waterMark");
+window.addEventListener('DOMContentLoaded', function () {
+  UI.mountTopbar('lsb-order/');
 
-  const encodeInput = document.getElementById("encodeInput");
+  const waterMark = document.getElementById('waterMark');
+  const encodeInput = document.getElementById('encodeInput');
   const encodeCanvas = document.getElementById('encodeCanvas');
-  const encodeCanvasCtx = encodeCanvas.getContext('2d');
+  const encodeCtx = encodeCanvas.getContext('2d', { willReadFrequently: true });
+  const encodeStat = document.getElementById('encodeStat');
+  const downloadBtn = document.getElementById('download');
 
-
-  const decodeInput = document.getElementById("decodeInput");
+  const decodeInput = document.getElementById('decodeInput');
+  const decodeCanvas = document.getElementById('decodeImageCanvas');
+  const decodeCtx = decodeCanvas.getContext('2d', { willReadFrequently: true });
   const decodeText = document.getElementById('decodeText');
-  const decodeImageCanvas = document.getElementById('decodeImageCanvas');
-  const decodeImageCanvasCtx = decodeImageCanvas.getContext('2d');
-
 
   encodeInput.onchange = function () {
-    getImageInfo(null, this.files[0], (err, data) => {
-      if (err) return console.error(err)
+    const file = this.files[0];
+    const text = waterMark.value;
+    if (!file) return;
+    if (!text) return UI.toast('请先填写水印内容');
+    if (Array.from(text).length > MAX_CHARS) return UI.toast('水印最多 ' + MAX_CHARS + ' 个字符');
+
+    getImageInfo(null, file, (err, data) => {
+      if (err) return UI.toast(err.message);
       const { width, height, imgElement } = data;
+      const bits = buildBitString(text);
+      if (bits.length > lsbCapacity(width * height)) {
+        return UI.toast('图片太小，装不下这段水印');
+      }
       encodeCanvas.width = width;
       encodeCanvas.height = height;
-      mergeData(encodeCanvasCtx, drawAndGetCanvasImageData(encodeCanvasCtx, imgElement, width, height), waterMark.value)
-    })
-  }
+      encodeCtx.drawImage(imgElement, 0, 0);
+      const imageData = encodeCtx.getImageData(0, 0, width, height);
+      writeBits(imageData, bits);
+      encodeCtx.putImageData(imageData, 0, 0);
+      encodeStat.textContent = '已写入 ' + bits.length + ' bit，占用容量 ' +
+        (bits.length / lsbCapacity(width * height) * 100).toFixed(2) + '%';
+      downloadBtn.disabled = false;
+    });
+  };
+
+  downloadBtn.onclick = function () {
+    UI.downloadCanvas(encodeCanvas, 'lsb-order.png');
+  };
 
   decodeInput.onchange = function () {
-    getImageInfo(null, this.files[0], (err, data) => {
-      if (err) return console.error(err)
+    const file = this.files[0];
+    if (!file) return;
+    getImageInfo(null, file, (err, data) => {
+      if (err) return UI.toast(err.message);
       const { width, height, imgElement } = data;
-      decodeImageCanvas.width = width;
-      decodeImageCanvas.height = height;
-      decodeImageCanvasCtx.drawImage(imgElement, 0, 0);
-      const text = getProcessData(decodeImageCanvasCtx.getImageData(0, 0, width, height).data)
-      decodeText.innerHTML = text;
-    })
-  }
-}
+      decodeCanvas.width = width;
+      decodeCanvas.height = height;
+      decodeCtx.drawImage(imgElement, 0, 0);
+      const text = readWatermark(decodeCtx.getImageData(0, 0, width, height).data);
+      decodeText.textContent = text || '（没读出水印，图片可能被压缩过）';
+    });
+  };
+});

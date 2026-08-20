@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C2PA 内容凭证读取器｜在线查看图片的 AI 生成标记与来源</title>
+<!-- seo:start -->
+  <meta name="description" content="读取 JPEG、PNG、WebP 文件里的 C2PA Content Credentials：写入凭证的工具、是否声明为 AI 生成、编辑动作链、素材来源与数字签名。纯浏览器解析，文件不上传。">
+  <meta name="keywords" content="C2PA,内容凭证,Content Credentials,AI 生成标记,digitalSourceType,图片溯源,元数据查看,在线工具">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/c2pa/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="C2PA 内容凭证读取器｜在线查看图片的 AI 生成标记与来源">
+  <meta property="og:description" content="读取 JPEG、PNG、WebP 文件里的 C2PA Content Credentials：写入凭证的工具、是否声明为 AI 生成、编辑动作链、素材来源与数字签名。纯浏览器解析，文件不上传。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/c2pa/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="C2PA 内容凭证读取器｜在线查看图片的 AI 生成标记与来源">
+  <meta name="twitter:description" content="读取 JPEG、PNG、WebP 文件里的 C2PA Content Credentials：写入凭证的工具、是否声明为 AI 生成、编辑动作链、素材来源与数字签名。纯浏览器解析，文件不上传。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <header data-topbar="../../"></header>
+
+  <main class="wrap wrap--wide">
+    <div class="page-head">
+      <span class="badge badge--accent">新增</span>
+      <h1>内容凭证读取器（C2PA）</h1>
+      <p>
+        2026 年起，Claude、OpenAI、Google 等在生成图片时会附上一份 <strong>C2PA 内容凭证</strong>——
+        一段带数字签名的清单，写明「谁生成的、是不是 AI、经过哪些编辑、用了哪些素材」。
+        把文件拖进来就能把这份清单读出来。解析全在浏览器里完成，文件不上传。
+      </p>
+    </div>
+
+    <div class="card">
+      <div id="drop" class="drop">
+        <input type="file" id="file" accept="image/*,.svg,.mp4,.webp">
+        <p class="muted" style="margin:10px 0 0">
+          支持 JPEG（APP11）、PNG（caBX 块）、WebP（C2PA 块），也可以直接把文件拖到这块区域
+        </p>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn" id="sample-ai">载入示例：AI 生成</button>
+        <button class="btn" id="sample-edit">载入示例：拍摄后编辑</button>
+        <span class="muted" id="hint">还没有读取任何文件</span>
+      </div>
+      <p class="muted" style="margin:10px 0 0">
+        示例文件来自 C2PA 官方实现
+        <a href="https://github.com/contentauth/c2pa-rs" target="_blank" rel="noopener">contentauth/c2pa-rs</a>
+        的测试用例，由你的浏览器直接从 GitHub 拉取。
+      </p>
+    </div>
+
+    <section id="result" hidden>
+      <div class="stat-row" id="stats"></div>
+      <div id="body"></div>
+    </section>
+
+    <h2>能读出什么</h2>
+    <div class="table-scroll card">
+      <table>
+        <thead><tr><th>字段</th><th>含义</th><th>典型取值</th></tr></thead>
+        <tbody>
+          <tr><td><code>claim_generator</code></td><td>写入凭证的工具</td><td>模型 / 应用名 + 版本号</td></tr>
+          <tr><td><code>c2pa.actions</code></td><td>对内容做过什么</td><td><code>c2pa.created</code>、<code>c2pa.edited</code>、<code>c2pa.opened</code></td></tr>
+          <tr><td><code>digitalSourceType</code></td><td><strong>是不是 AI 生成</strong>（IPTC 词表）</td><td><code>trainedAlgorithmicMedia</code> = 模型直接生成</td></tr>
+          <tr><td><code>c2pa.ingredient</code></td><td>用到的素材来源，可层层回溯</td><td>父级文件的标题与关系</td></tr>
+          <tr><td><code>c2pa.hash.data</code></td><td>内容哈希，用来判断像素有没有被改</td><td>sha256 + 排除区间</td></tr>
+          <tr><td><code>c2pa.signature</code></td><td>COSE 数字签名与证书链</td><td>本页只显示是否存在，不做验签</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>凭证 ≠ 水印，两者会一起失效吗</h2>
+    <div class="table-scroll card">
+      <table>
+        <thead><tr><th>操作</th><th>C2PA 内容凭证</th><th>像素水印（SynthID 一类）</th><th>文字统计水印</th></tr></thead>
+        <tbody>
+          <tr><td>另存为 / 重新编码</td><td><span class="badge badge--danger">丢失</span></td><td>多半保留</td><td>—</td></tr>
+          <tr><td>截图</td><td><span class="badge badge--danger">丢失</span></td><td>多半保留</td><td>—</td></tr>
+          <tr><td>平台压缩、加滤镜</td><td>视平台是否保留元数据</td><td>多半保留</td><td>—</td></tr>
+          <tr><td>裁剪一部分</td><td>签名校验失败</td><td>取决于强度</td><td>—</td></tr>
+          <tr><td>复制粘贴纯文本</td><td>—</td><td>—</td><td><span class="badge badge--ok">保留</span></td></tr>
+          <tr><td>改写措辞</td><td>—</td><td>—</td><td>逐渐失效</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>这一页只做「展示」，不做「抹除」。</strong>
+      内容凭证是给下游平台和监管做溯源判断用的（欧盟 AI Act 第 50 条），
+      提供一键抹掉 AI 出处的按钮属于帮人绕开透明度义务，这个仓库不做。
+      如果你的诉求是<strong>发图前清掉隐私信息</strong>（GPS、设备型号），
+      <a href="../exif/">EXIF 页面</a>的「导出无元信息副本」就是干这个的，它重新编码一遍，所有元数据一起清掉。
+    </div>
+
+    <footer class="site">
+      文件不会上传，全部在本地解析 · <a href="../../">返回首页</a>
+    </footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="../../assets/c2pa.js"></script>
+  <script src="index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/c2pa/#app",
+   "name": "C2PA 内容凭证读取器",
+   "url": "https://unstone.github.io/digital-watermarking/pages/c2pa/",
+   "description": "读取 JPEG、PNG、WebP 文件里的 C2PA Content Credentials：写入凭证的工具、是否声明为 AI 生成、编辑动作链、素材来源与数字签名。纯浏览器解析，文件不上传。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/c2pa/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "C2PA 内容凭证读取器",
+     "item": "https://unstone.github.io/digital-watermarking/pages/c2pa/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
+</body>
+</html>

@@ -1,54 +1,126 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='zh-CN'>
 <head>
-    <title>PixelJihad</title>
+    <meta charset='utf-8'>
+    <title>LSB 口令加密隐写｜带 AES 加密的图片隐写工具</title>
+<!-- seo:start -->
+  <meta name="description" content="写入图片前先用 SJCL 做 AES 加密，没有口令就算知道算法也读不出内容。基于 PixelJihad 的实现，作对照演示。">
+  <meta name="keywords" content="加密隐写,AES 隐写,LSB 加密,图片藏字,PixelJihad,steganography">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/lsb-encryption/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="LSB 口令加密隐写｜带 AES 加密的图片隐写工具">
+  <meta property="og:description" content="写入图片前先用 SJCL 做 AES 加密，没有口令就算知道算法也读不出内容。基于 PixelJihad 的实现，作对照演示。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/lsb-encryption/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LSB 口令加密隐写｜带 AES 加密的图片隐写工具">
+  <meta name="twitter:description" content="写入图片前先用 SJCL 做 AES 加密，没有口令就算知道算法也读不出内容。基于 PixelJihad 的实现，作对照演示。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
     <meta name='viewport'
         content='width=device-width, initial-scale=1, maximum-scale=1'>
+    <link href='../../assets/theme.css' type='text/css' rel='stylesheet' />
     <link href='./index.css' type='text/css' rel='stylesheet' />
+    <script src='../../assets/ui.js' type='text/javascript'></script>
     <script src='sjcl.js' type='text/javascript'></script>
     <script src='./index.js' type='text/javascript'></script>
 </head>
 <body>
-    <a href="https://github.com/oakes/PixelJihad">
-    <img style="position: absolute; top: 0; right: 0; border: 0;"
-    src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
-    alt="Fork me on GitHub"></a>
-    <h1>PixelJihad</h1>
+    <header data-topbar="../../"></header>
+    <script>document.addEventListener('DOMContentLoaded', function () { UI.mountTopbar(''); });</script>
+    <h1>LSB 隐写 · 口令加密</h1>
     <div id='about' class='section'>
-        A <a href='http://en.wikipedia.org/wiki/Steganography'>stego</a>
-         tool in pure HTML5 by Zach Oakes.<br/>
-        Works well in Chrome, Firefox, Opera, and IE10+.<br/>
-        <a href='about.html'>How it works</a>.
+        写入前先用 SJCL 做 AES 加密，没有口令，就算知道算法也读不出内容。<br/>
+        选图后会自动尝试解码；导出请务必用 PNG，JPEG 压缩会直接抹掉最低有效位。<br/>
+        本页直接沿用了
+        <a href='https://github.com/oakes/PixelJihad' target='_blank' rel='noopener'>PixelJihad</a>
+        （作者 Zach Oakes）的实现，仅作对照演示。
     </div>
     <div id='main' class='section dark'>
-        <div class='step'>Choose an image</div>
+        <div class='step'>选择一张图片</div>
         <img id='preview' class='preview hide' />
         <div class='sectionbody'>
             <input type='file' id='file' />
         </div>
     </div>
     <div id='choose' class='section dark hide'>
-        <div class='step'>What do you want to do?</div>
+        <div class='step'>想做什么？</div>
         <div class='sectionbody'>
             <div class='left'>
                 <textarea id='message' class='message' maxlength='1000'
-                    placeholder='Type hidden message'></textarea>
+                    placeholder='输入要隐藏的内容'></textarea>
                 <input type='password' id='password' class='password'
-                    placeholder='Password (optional)' />
-                <button id='encode' class='submit'>Hide message</button>
+                    placeholder='口令（可选）' />
+                <button id='encode' class='submit'>写入</button>
             </div>
             <div class='right'>
                 <input type='password' id='password2' class='password'
-                    placeholder='Password' />
-                <button id='decode' class='submit'>Reveal message</button>
+                    placeholder='口令' />
+                <button id='decode' class='submit'>读取</button>
             </div>
         </div>
     </div>
     <div id='reveal' class='section dark hide'>
-        <div class='step'>Hidden message</div>
+        <div class='step'>隐藏的内容</div>
         <div id='messageDecoded' class='sectionbody'></div>
     </div>
     <canvas id='canvas' class='hide'></canvas>
-    <img id='output' />
+    <div class='section'><img id='output' /></div>
+    <footer class="site" style="max-width:640px;margin:0 auto;text-align:left">
+        图片不会上传 · <a href="../../">返回首页</a> ·
+        <a href="../lsb-order/">对比不加密的 LSB 顺序编码</a>
+    </footer>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/lsb-encryption/#app",
+   "name": "LSB 口令加密隐写",
+   "url": "https://unstone.github.io/digital-watermarking/pages/lsb-encryption/",
+   "description": "写入图片前先用 SJCL 做 AES 加密，没有口令就算知道算法也读不出内容。基于 PixelJihad 的实现，作对照演示。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/lsb-encryption/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "LSB 口令加密隐写",
+     "item": "https://unstone.github.io/digital-watermarking/pages/lsb-encryption/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
 </body>
 </html>

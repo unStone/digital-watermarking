@@ -1,26 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Github Page demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="index.css" />
-    <script src="../utils.js"></script>
-    <script src="index.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图片明水印 & 全屏无痕水印｜在线生成与拉色阶还原</title>
+<!-- seo:start -->
+  <meta name="description" content="Canvas 在线给图片加平铺明水印，同时叠一层 1% 不透明度的无痕水印；内置模拟拉色阶功能，可以直接看到无痕水印怎么现形。">
+  <meta name="keywords" content="图片水印,明水印,无痕水印,全屏水印,防截图,拉色阶,Canvas 水印,在线加水印">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/according/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="图片明水印 & 全屏无痕水印｜在线生成与拉色阶还原">
+  <meta property="og:description" content="Canvas 在线给图片加平铺明水印，同时叠一层 1% 不透明度的无痕水印；内置模拟拉色阶功能，可以直接看到无痕水印怎么现形。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/according/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="图片明水印 & 全屏无痕水印｜在线生成与拉色阶还原">
+  <meta name="twitter:description" content="Canvas 在线给图片加平铺明水印，同时叠一层 1% 不透明度的无痕水印；内置模拟拉色阶功能，可以直接看到无痕水印怎么现形。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
 </head>
 <body>
-    <div id="main-content">
-        <h1>显式水印 & 全屏无痕水印方案</h1>
-        <a href="../../">返回</a>
-        <a href="https://ps.gaoding.com/#/" target="_blank" rel="noopener noreferrer">调整色阶</a>
-        <div>
-            <input type="file" name="file" id="input-file"/>
-            <div class="canvas-content">
-                <canvas id="canvas"></canvas>
-                <canvas id="canvas-water-mark"></canvas>
-            </div>
-        </div>
+  <header data-topbar="../../"></header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>明水印 & 全屏无痕水印</h1>
+      <p>
+        两种最朴素的方案叠在一起：一层肉眼可见的明水印用来声明版权，
+        另一层不透明度只有 1% 的多色文字用来溯源——正常看什么都没有，拉一下色阶就现形。
+        后台系统防截图外传常用这一招。
+      </p>
     </div>
+
+    <div class="card">
+      <div class="cols">
+        <div class="field">
+          <label for="text">水印文字</label>
+          <input type="text" id="text" value="仅供内部查阅 · uid 10086">
+        </div>
+        <div class="field">
+          <label for="file">选择图片</label>
+          <input type="file" id="file" accept="image/*">
+        </div>
+      </div>
+      <div class="cols" style="margin-top:14px">
+        <div class="field">
+          <label for="visible">明水印不透明度 <span id="visible-v" class="cp">0.18</span></label>
+          <input type="range" id="visible" min="0" max="0.6" step="0.02" value="0.18">
+        </div>
+        <div class="field">
+          <label for="ghost">无痕水印不透明度 <span id="ghost-v" class="cp">0.01</span></label>
+          <input type="range" id="ghost" min="0.002" max="0.06" step="0.002" value="0.01">
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn--primary" id="download" disabled>下载合成图</button>
+        <span class="muted">合成图里两层水印都已经烧进像素</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">合成结果</h2>
+      <div class="canvas-box"><canvas id="canvas"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">模拟拉色阶</h2>
+      <p class="muted" style="margin-top:0">
+        把亮部区间拉开，1% 的暗色文字就会跳出来。浅色背景（后台页面截图）效果最好，深色照片基本看不出来——
+        这也正是无痕水印的适用边界。
+      </p>
+      <div class="cols">
+        <div class="field">
+          <label for="black">黑场 <span id="black-v" class="cp">235</span></label>
+          <input type="range" id="black" min="0" max="254" value="235">
+        </div>
+        <div class="field">
+          <label for="white">白场 <span id="white-v" class="cp">255</span></label>
+          <input type="range" id="white" min="1" max="255" value="255">
+        </div>
+      </div>
+      <div class="canvas-box" style="margin-top:14px"><canvas id="reveal"></canvas></div>
+    </div>
+
+    <footer class="site">图片不会上传 · <a href="../../">返回首页</a></footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="../utils.js"></script>
+  <script src="index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/according/#app",
+   "name": "明水印与全屏无痕水印",
+   "url": "https://unstone.github.io/digital-watermarking/pages/according/",
+   "description": "Canvas 在线给图片加平铺明水印，同时叠一层 1% 不透明度的无痕水印；内置模拟拉色阶功能，可以直接看到无痕水印怎么现形。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/according/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "明水印与全屏无痕水印",
+     "item": "https://unstone.github.io/digital-watermarking/pages/according/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
 </body>
 </html>

@@ -1,24 +1,154 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>text water mark</title>
-  <script src="index.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>文本隐形水印｜零宽字符 / 变体选择符 / Unicode Tag 在线嵌入与提取</title>
+<!-- seo:start -->
+  <meta name="description" content="把水印藏进正常文本的字符缝隙里：三种字符级隐写方案，支持中文和 emoji，字数完全不变，可嵌入、可提取、可清洗。">
+  <meta name="keywords" content="零宽字符水印,文本水印,隐形水印,变体选择符,Unicode Tag,文本隐写,溯源">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/text/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="文本隐形水印｜零宽字符 / 变体选择符 / Unicode Tag 在线嵌入与提取">
+  <meta property="og:description" content="把水印藏进正常文本的字符缝隙里：三种字符级隐写方案，支持中文和 emoji，字数完全不变，可嵌入、可提取、可清洗。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/text/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="文本隐形水印｜零宽字符 / 变体选择符 / Unicode Tag 在线嵌入与提取">
+  <meta name="twitter:description" content="把水印藏进正常文本的字符缝隙里：三种字符级隐写方案，支持中文和 emoji，字数完全不变，可嵌入、可提取、可清洗。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
 </head>
 <body>
-  <div>
-    内容载体：<input type="text" placeholder id="encodeMessageInput" />
-  </div>
-  <div>
-    水印：<input type="text" placeholder id="encodeWatermarkInput" />
-  </div>
-  生成的内容：<div id="textCopy"></div>
+  <header data-topbar="../../"></header>
 
-  <div>
-    加水印后的内容：<input type="text" placeholder id="decodeMessageInput" />
-  </div>
-  解出水印内容：<div id="decodeMessage"></div>
+  <main class="wrap">
+    <div class="page-head">
+      <h1>文本隐形水印</h1>
+      <p>
+        把一段水印藏进正常文本的字符缝隙里，肉眼看不出、字数不变、复制粘贴还跟着走。
+        载荷先转 UTF-8 再编码，中文和 emoji 都能塞。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">嵌入</h2>
+      <div class="field">
+        <label for="carrier">载体文本</label>
+        <textarea id="carrier" placeholder="要发出去的那段话…">这份方案的初稿已经同步给各位，请在本周五之前反馈意见。</textarea>
+      </div>
+      <div class="field">
+        <label for="payload">水印内容</label>
+        <input type="text" id="payload" value="chenlei@2026" placeholder="想追踪的标识，比如收件人 ID">
+      </div>
+      <div class="cols" style="margin-top:14px">
+        <div class="field">
+          <label for="scheme">编码方案</label>
+          <select id="scheme">
+            <option value="zerowidth">零宽字符（4 字符 / 字节，兼容性最好）</option>
+            <option value="vs">变体选择符（1 字符 / 字节，最紧凑）</option>
+            <option value="tag">Unicode Tag（仅可见 ASCII）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mode">分布方式</label>
+          <select id="mode">
+            <option value="spread">分散：均匀插进全文，截断一段也能留痕</option>
+            <option value="head">集中：全部塞在首字符后</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn--primary" id="btn-embed">生成</button>
+        <button class="btn" id="btn-copy">复制结果</button>
+        <span class="muted" id="embed-stat"></span>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label for="output">带水印的文本（看上去和原文一模一样）</label>
+        <textarea id="output" readonly></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">提取</h2>
+      <div class="field">
+        <label for="marked">粘贴一段可能带水印的文本</label>
+        <textarea id="marked" placeholder="粘贴进来自动解码…"></textarea>
+      </div>
+      <div id="decode-result" class="muted" style="margin-top:12px">等待输入。</div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn" id="btn-strip">清洗并复制</button>
+        <a class="btn" href="../ai-text/">用检测器做完整分析 →</a>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>它挡不住什么：</strong>只要对方把文本过一遍纯文本编辑器、重新手打、或者用检测工具清洗一次，水印就没了。
+      字符级水印适合做<strong>定向分发溯源</strong>（谁泄的），不适合做<strong>内容真伪判定</strong>（是不是 AI 写的）——
+      后者是 Claude 那套统计式水印在解决的问题，两者原理完全不同，
+      <a href="../ai-text/">检测器页面有对比表</a>。
+    </div>
+
+    <footer class="site">
+      全程浏览器本地运行 · <a href="../../">返回首页</a>
+    </footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="../../assets/invisible.js"></script>
+  <script src="index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/text/#app",
+   "name": "文本隐形水印",
+   "url": "https://unstone.github.io/digital-watermarking/pages/text/",
+   "description": "把水印藏进正常文本的字符缝隙里：三种字符级隐写方案，支持中文和 emoji，字数完全不变，可嵌入、可提取、可清洗。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/text/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "文本隐形水印",
+     "item": "https://unstone.github.io/digital-watermarking/pages/text/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
 </body>
 </html>

@@ -1,31 +1,151 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title></title>
-        <script src="../utils.js"></script>
-        <script src="index.js"></script>
-    </head>
-    <body>
-        <p>
-            水印内容：
-            <input placeholder="输入英文或数字" type="text" id="waterMark"/>
-        </p>
-        <p>
-            请选择要输入水印的图片
-            <input type="file" name="file" id="encodeInput"/>
-        </p>
-        <p>
-            塞入的水印：<canvas id="encodeTextCanvas"></canvas>
-            处理后的图片：<canvas id="encodeCanvas"></canvas>
-        </p>
-        <p>
-            请选择要解析水印的图片
-            <input type="file" name="file" id="decodeInput"/>
-        </p>
-        <p>
-            解析图片：<canvas id="decodeImageCanvas"></canvas>
-            解析出来的水印：<canvas id="decodeCanvas"></canvas>
-        </p>
-    </body>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LSB 图形隐写在线工具｜位平面水印一键显影</title>
+<!-- seo:start -->
+  <meta name="description" content="把一整张文字图当作水印写进目标通道的最低有效位，解码时把这一位放大成黑白图，水印直接显影，不需要知道任何编码格式。">
+  <meta name="keywords" content="LSB 隐写,位平面,图片隐写,水印显影,图形水印,在线工具">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/lsb-img/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="LSB 图形隐写在线工具｜位平面水印一键显影">
+  <meta property="og:description" content="把一整张文字图当作水印写进目标通道的最低有效位，解码时把这一位放大成黑白图，水印直接显影，不需要知道任何编码格式。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/lsb-img/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LSB 图形隐写在线工具｜位平面水印一键显影">
+  <meta name="twitter:description" content="把一整张文字图当作水印写进目标通道的最低有效位，解码时把这一位放大成黑白图，水印直接显影，不需要知道任何编码格式。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
+</head>
+<body>
+  <header data-topbar="../../"></header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>LSB 隐写 · 图形通道</h1>
+      <p>
+        水印不转成比特串，而是先画成一整张透明底的文字图，用它的 alpha 通道当比特源写进目标分量的最低位。
+        解码时把这一位放大成黑白图，水印直接「显影」——不需要知道任何长度或编码格式。
+      </p>
+    </div>
+
+    <div class="note">
+      <strong>必须导出 PNG。</strong>JPEG 有损压缩会重写最低有效位，水印会整片糊掉。
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">嵌入</h2>
+      <div class="cols">
+        <div class="field">
+          <label for="waterMark">水印文字</label>
+          <input type="text" id="waterMark" value="内部资料" placeholder="会斜向平铺满整张图">
+        </div>
+        <div class="field">
+          <label for="channel">写入通道</label>
+          <select id="channel">
+            <option value="G">G · 绿色（人眼最敏感，改动最难察觉）</option>
+            <option value="R">R · 红色</option>
+            <option value="B">B · 蓝色</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label for="encodeInput">选择原图（建议 PNG）</label>
+        <input type="file" id="encodeInput" accept="image/*">
+      </div>
+      <div class="btn-row" style="margin:14px 0">
+        <button class="btn btn--primary" id="download" disabled>下载带水印的 PNG</button>
+      </div>
+      <div class="cols">
+        <div class="figure">
+          <p class="muted">水印图层（白字透明底，这里衬了深色只为看得见）</p>
+          <div class="canvas-box" style="background:#17171a"><canvas id="encodeTextCanvas"></canvas></div>
+        </div>
+        <div class="figure">
+          <p class="muted">合成结果</p>
+          <div class="canvas-box"><canvas id="encodeCanvas"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">提取</h2>
+      <div class="field">
+        <label for="decodeInput">选择带水印的图片（通道要和嵌入时一致）</label>
+        <input type="file" id="decodeInput" accept="image/*">
+      </div>
+      <div class="cols" style="margin-top:14px">
+        <div class="figure">
+          <p class="muted">原图</p>
+          <div class="canvas-box"><canvas id="decodeImageCanvas"></canvas></div>
+        </div>
+        <div class="figure">
+          <p class="muted">最低位平面</p>
+          <div class="canvas-box"><canvas id="decodeCanvas"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site">图片不会上传 · <a href="../../">返回首页</a></footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="../utils.js"></script>
+  <script src="index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/lsb-img/#app",
+   "name": "LSB 图形通道隐写",
+   "url": "https://unstone.github.io/digital-watermarking/pages/lsb-img/",
+   "description": "把一整张文字图当作水印写进目标通道的最低有效位，解码时把这一位放大成黑白图，水印直接显影，不需要知道任何编码格式。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/lsb-img/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "LSB 图形通道隐写",
+     "item": "https://unstone.github.io/digital-watermarking/pages/lsb-img/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
+</body>
 </html>

@@ -1,0 +1,45 @@
+.drop {
+  border: 1px dashed var(--border-hi);
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+  padding: 20px;
+  transition: border-color .15s, background .15s;
+}
+.drop.over { border-color: var(--accent); background: var(--accent-bg); }
+.drop input[type=file] { border: 0; background: transparent; padding: 0; }
+
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.stat .k { font-size: 12px; color: var(--text-soft); }
+.stat .v { font-size: 20px; font-weight: 600; letter-spacing: -.02em; line-height: 1.4; }
+.stat--ai { border-color: var(--danger); }
+.stat--ai .v { color: var(--danger); }
+.stat--ok .v { color: var(--ok); }
+
+.kv { display: grid; grid-template-columns: 120px 1fr; gap: 6px 16px; font-size: 13.5px; }
+.kv dt { color: var(--text-soft); }
+.kv dd { margin: 0; word-break: break-word; }
+@media (max-width: 560px) { .kv { grid-template-columns: 1fr; gap: 2px 0; } .kv dd { margin-bottom: 8px; } }
+
+.timeline { list-style: none; padding: 0; margin: 0; }
+.timeline li {
+  position: relative; padding: 0 0 14px 20px;
+  border-left: 2px solid var(--border);
+}
+.timeline li:last-child { padding-bottom: 0; border-left-color: transparent; }
+.timeline li::before {
+  content: ''; position: absolute; left: -5px; top: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+}
+.timeline .act { font-family: var(--mono); font-size: 13px; }
+.timeline .meta { font-size: 12.5px; color: var(--text-soft); }
+
+details.raw { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+details.raw > summary { cursor: pointer; font-size: 13px; color: var(--text-soft); }
+details.raw pre {
+  background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px; overflow-x: auto; font-size: 12px; margin: 8px 0 0; line-height: 1.6;
+}
+
+.thumb { max-width: 220px; border-radius: 8px; border: 1px solid var(--border); display: block; }

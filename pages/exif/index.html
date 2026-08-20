@@ -1,26 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Github Page demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="index.css" />
-    <script src="../utils.js"></script>
-    <script src="exif-reader.js"></script>
-    <script src="index.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXIF 元信息在线查看｜GPS 定位提取与一键清除</title>
+<!-- seo:start -->
+  <meta name="description" content="在线读取图片的 EXIF 元信息：相机型号、拍摄时间、软件版本和 GPS 经纬度，并支持导出一份不含任何元信息的副本。图片不上传。">
+  <meta name="keywords" content="EXIF 查看,EXIF 在线,GPS 定位提取,照片元数据,清除 EXIF,隐私">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/exif/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="EXIF 元信息在线查看｜GPS 定位提取与一键清除">
+  <meta property="og:description" content="在线读取图片的 EXIF 元信息：相机型号、拍摄时间、软件版本和 GPS 经纬度，并支持导出一份不含任何元信息的副本。图片不上传。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/exif/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="EXIF 元信息在线查看｜GPS 定位提取与一键清除">
+  <meta name="twitter:description" content="在线读取图片的 EXIF 元信息：相机型号、拍摄时间、软件版本和 GPS 经纬度，并支持导出一份不含任何元信息的副本。图片不上传。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
 </head>
 <body>
-    <div id="main-content">
-        <h1>exif隐式水印</h1>
-        <a href="../../">返回</a>
-        <a href="https://www.bejson.com/convert/map/" target="_blank" rel="noopener noreferrer">查询经纬度1</a>
-        <a href="https://www.toolzl.com/tools/gps.html" target="_blank" rel="noopener noreferrer">查询经纬度2</a>
-        <p>
-            <input type="file" name="file" id="input-file"/>
-            <p id="GPSLongitude"></p>
-            <p id="GPSLatitude"></p>
-        </p>
+  <header data-topbar="../../"></header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>EXIF 元信息</h1>
+      <p>
+        严格说 EXIF 不算水印，但它是最容易被忽略的「作者标记」：
+        相机型号、拍摄时间、软件版本，甚至精确到十几米的 GPS 坐标，全都明文躺在文件头里。
+        随手发一张原图，等于把这些一起发出去了。
+      </p>
     </div>
+
+    <div class="card">
+      <div class="field">
+        <label for="file">选择一张图片（手机直出的原图信息最全）</label>
+        <input type="file" id="file" accept="image/*">
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn--primary" id="strip" disabled>导出无元信息副本</button>
+        <span class="muted">重新编码一遍即可抹掉全部 EXIF</span>
+      </div>
+    </div>
+
+    <div id="gps-card" class="card" hidden>
+      <h2 style="margin-top:0"><span class="badge badge--danger">隐私</span> GPS 位置</h2>
+      <p style="margin:0">
+        经度 <strong id="lon">—</strong> ，纬度 <strong id="lat">—</strong>
+      </p>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn" id="copy-gps">复制坐标</button>
+        <a class="btn" id="map-link" target="_blank" rel="noopener">在地图上打开</a>
+      </div>
+    </div>
+
+    <div id="tags-card" class="card" hidden>
+      <h2 style="margin-top:0">全部元信息 <span class="muted" id="tag-count"></span></h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>字段</th><th>值</th></tr></thead>
+          <tbody id="tags"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p id="empty" class="muted" hidden>这张图片里没有读到 EXIF —— 多数社交平台在上传时就已经把它清掉了。</p>
+
+    <footer class="site">图片不会上传 · <a href="../../">返回首页</a></footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="../utils.js"></script>
+  <script src="exif-reader.js"></script>
+  <script src="index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/exif/#app",
+   "name": "EXIF 元信息查看器",
+   "url": "https://unstone.github.io/digital-watermarking/pages/exif/",
+   "description": "在线读取图片的 EXIF 元信息：相机型号、拍摄时间、软件版本和 GPS 经纬度，并支持导出一份不含任何元信息的副本。图片不上传。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/exif/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "EXIF 元信息查看器",
+     "item": "https://unstone.github.io/digital-watermarking/pages/exif/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
 </body>
 </html>

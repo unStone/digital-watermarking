@@ -1,92 +1,76 @@
-const zeroWidthChar = [
-  '\u200B',  //零宽空格
-  '\u200C',  //零宽非连接符
-  '\u200D',  //零宽连接符
-  '\uFEFF', //零宽度非换行空格
-]
-const zeroWidthCharReg = new RegExp(`[${zeroWidthChar.join('')}]`, 'g')
+(function () {
+  'use strict';
 
-//清空字符串中的零宽字符
-function removeZeroWidthChar(string) {
-  return string.replace(zeroWidthCharReg, '')
-}
+  const { $, toast, copy, mountTopbar } = UI;
+  const I = Invisible;
 
-//添加水印
-function encodeMark(str, mark) {
-  const string = removeZeroWidthChar(str);
-  const watermark = removeZeroWidthChar(mark);
-  if (!string.length) {
-    return {
-      string, success: false, error: 'target string cannot be empty'
+  const SCHEME_LABEL = { zerowidth: '零宽字符', vs: '变体选择符', tag: 'Unicode Tag' };
+
+  function embed() {
+    const carrier = $('#carrier').value;
+    const payload = $('#payload').value;
+    const scheme = $('#scheme').value;
+    const mode = $('#mode').value;
+    const out = $('#output');
+    const stat = $('#embed-stat');
+
+    try {
+      const result = I.embed(carrier, payload, scheme, mode);
+      out.value = result;
+      const added = Array.from(result).length - Array.from(I.strip(carrier)).length;
+      stat.textContent = '插入 ' + added + ' 个不可见字符，可见内容零变化';
+      stat.style.color = '';
+    } catch (err) {
+      out.value = '';
+      stat.textContent = err.message;
+      stat.style.color = 'var(--danger)';
     }
   }
-  let result = '';
-  for (let i = 0, length = watermark.length; i < length; i ++) {
-    const utf16 = watermark.charCodeAt(i);
-    const binaryString = utf16.toString(2);
-    const joinChar = i === length - 1 ? '' : zeroWidthChar[2];
-    result += binaryString.split('').map(d => zeroWidthChar[Number(d)]).join('') + joinChar
-  }
-  return {
-    string: string.slice(0, 1) + result + string.slice(1),
-    success: true
-  }
-}
 
-//解码水印
-function decodeMark(string) {
-  if (!string.length) {
-    return {
-      success: false, error: 'target string cannot be empty'
+  function decode() {
+    const text = $('#marked').value;
+    const box = $('#decode-result');
+    if (!text) {
+      box.innerHTML = '等待输入。';
+      return;
     }
+    const report = I.scan(text);
+    const hits = [
+      ['zerowidth', report.hidden.zerowidth],
+      ['vs', report.hidden.vs],
+      ['tag', report.hidden.tag],
+    ].filter(([, v]) => v && /\S/.test(v));
+
+    if (!hits.length) {
+      box.innerHTML = report.invisibleCount
+        ? '发现 ' + report.invisibleCount + ' 个不可见字符，但解不出可读载荷（可能用了别的编码）。' +
+          '<a href="../ai-text/">去检测器看明细 →</a>'
+        : '没有检测到隐藏内容。';
+      return;
+    }
+    box.innerHTML = hits.map(([k, v]) =>
+      '<div style="margin-bottom:8px"><span class="badge badge--accent">' + SCHEME_LABEL[k] + '</span> ' +
+      '<code>' + v.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) + '</code></div>'
+    ).join('');
   }
-  const charArr = string.match(zeroWidthCharReg);
-  if (!charArr) {
-    return {
-      mark: '', success: true
+
+  window.addEventListener('DOMContentLoaded', function () {
+    mountTopbar('text/');
+
+    $('#btn-embed').onclick = embed;
+    $('#btn-copy').onclick = function () { copy($('#output').value, '带水印文本已复制'); };
+    ['#carrier', '#payload'].forEach((s) => { $(s).oninput = embed; });
+    ['#scheme', '#mode'].forEach((s) => { $(s).onchange = embed; });
+
+    $('#marked').oninput = decode;
+    $('#btn-strip').onclick = function () {
+      const cleaned = I.strip($('#marked').value);
+      if (!cleaned) return toast('提取框里还没有内容');
+      $('#marked').value = cleaned;
+      decode();
+      copy(cleaned, '已清洗并复制');
     };
-  }
 
-  const binaryArr = charArr.join('').split(zeroWidthChar[2]);
-  const mark = binaryArr.map(binary => {
-    const binaryString = binary.split('').map(b => zeroWidthChar.indexOf(b)).join('');
-    const utf16 = parseInt(binaryString, 2);
-    return String.fromCharCode(utf16)
-  }).join('')
-  return {
-    mark, success: true
-  };
-}
-window.onload = function() {
-  const encodeMessageInput = document.getElementById('encodeMessageInput');
-  const encodeWatermarkInput = document.getElementById('encodeWatermarkInput');
-  const textCopy = document.getElementById('textCopy');
-
-  // 复制文本
-  textCopy.onclick = function() {
-    navigator.clipboard.writeText(this.innerHTML);
-  };
-
-  // 添加水印
-  encodeMessageInput.onblur = encodeWatermarkInput.onblur = function () {
-    if (encodeMessageInput.value && encodeWatermarkInput.value) {
-      textCopy.innerHTML = encodeMark(encodeMessageInput.value, encodeWatermarkInput.value).string;
-    }
-  }
-
-  encodeMessageInput.onfocus = encodeWatermarkInput.onfocus = function () {
-    if (encodeMessageInput.value && encodeWatermarkInput.value) {
-      textCopy.innerHTML = '';
-    }
-  }
-
-  // 解码
-  const decodeMessageInput = document.getElementById('decodeMessageInput');
-  const decodeMessage = document.getElementById('decodeMessage');
-
-  decodeMessageInput.onblur = function () {
-    if (decodeMessageInput.value) {
-      decodeMessage.innerHTML = decodeMark(decodeMessageInput.value).mark
-    }
-  }
-}
+    embed();
+  });
+})();

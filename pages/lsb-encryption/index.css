@@ -1,98 +1,81 @@
-body {
-  text-align: center;
-  background-color: lightgray;
-}
+/* 把 PixelJihad 原有的类名映射到全站设计系统上，index.js 不用改 */
+body { text-align: left; }
 
-body, textarea, input {
-  font-family: Helvetica, Arial;
-  color: dimgray;
-  border: none;
-}
-
-a {
-  color: dimgray;
-}
-
-p {
-  text-indent: 1.5em;
+h1 {
+  max-width: 640px;
+  margin: 40px auto 8px;
+  padding: 0 20px;
+  font-size: 28px;
+  letter-spacing: -.02em;
 }
 
 .section {
-  width: 450px;
-  margin: auto;
+  max-width: 640px;
+  margin: 0 auto 16px;
+  padding: 20px;
   overflow: auto;
-  margin-bottom: 30px;
-  padding: 30px;
 }
 
-@media (max-width: 700px) {
-  .section {
-      width: 70%;
-  }
-
-  /* so the 'fork me on github' ribbon doesn't overlap the text */
-  h1 {
-      margin-bottom: 60px;
-  }
+.section.dark {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
-.dark {
-  background-color: lightgray;
-  border-style: solid;
-  border-width: 1px;
-  border-color: dimgray;
-}
-
-.sectionbody {
-  margin-top: 40px;
-  text-align: left;
+#about {
+  color: var(--text-soft);
+  font-size: 14px;
+  padding-top: 0;
+  padding-bottom: 8px;
 }
 
 .step {
-  text-transform: uppercase;
-  position: absolute;
-  margin-top: -50px;
-  margin-left: -50px;
-  background-color: dimgray;
-  color: lightgray;
-  padding: 20px;
-  font-size: 20px;
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-bottom: 12px;
 }
 
-.left {
-  width: 45%;
-  float: left;
+.sectionbody { margin-top: 0; }
+
+.left, .right { width: 100%; float: none; }
+.right { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+@media (min-width: 720px) {
+  .left  { width: 48%; float: left; }
+  .right { width: 48%; float: right; margin-top: 0; padding-top: 0; border-top: 0; }
 }
 
-.right {
-  width: 45%;
-  float: right;
-}
-
-.password {
-  width: 100%;
-}
-
-.message {
-  width: 100%;
-  height: 100px;
-}
+.message { height: 120px; margin-bottom: 10px; }
+.password { margin-bottom: 10px; }
 
 .submit {
-  float: right;
+  float: none;
+  display: inline-flex; align-items: center;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font: inherit; font-size: 13.5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
 }
+.submit:hover { filter: brightness(1.06); }
 
 .preview {
-  margin-top: 30px;
-  width: 100px;
-  float: right;
+  margin-top: 0; margin-bottom: 14px;
+  width: 120px; float: none;
+  border-radius: 8px; border: 1px solid var(--border);
 }
 
-.hide {
-  display: none;
+#messageDecoded {
+  font-family: var(--mono); font-size: 13px;
+  white-space: pre-wrap; word-break: break-word;
+  background: var(--bg-soft); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px;
 }
 
-#output[src] {
-  margin-bottom: 1em;
-  box-shadow: 0px 0.5em 1em rgba(0,0,0,0.5);
-}
+#output { max-width: 100%; height: auto; border-radius: 8px; }
+#output:not([src]) { display: none; }
+#output[src] { box-shadow: var(--shadow); }
+
+.hide { display: none; }

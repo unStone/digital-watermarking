@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 文本痕迹检测｜零宽字符 · 不可见字符 · Unicode 走私在线扫描</title>
+<!-- seo:start -->
+  <meta name="description" content="在线扫描文本中的零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，还原隐藏载荷并一键清洗。同时说明 Claude 的文字水印为什么用这种方式查不出来。">
+  <meta name="keywords" content="零宽字符检测,不可见字符检测,AI 文本检测,Claude 水印检测,Unicode 走私,提示词注入,同形异义字,文本清洗">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/ai-text/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="AI 文本痕迹检测｜零宽字符 · 不可见字符 · Unicode 走私在线扫描">
+  <meta property="og:description" content="在线扫描文本中的零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，还原隐藏载荷并一键清洗。同时说明 Claude 的文字水印为什么用这种方式查不出来。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/ai-text/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AI 文本痕迹检测｜零宽字符 · 不可见字符 · Unicode 走私在线扫描">
+  <meta name="twitter:description" content="在线扫描文本中的零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，还原隐藏载荷并一键清洗。同时说明 Claude 的文字水印为什么用这种方式查不出来。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <header data-topbar="../../"></header>
+
+  <main class="wrap wrap--wide">
+    <div class="page-head">
+      <span class="badge badge--accent">主打</span>
+      <h1>AI 文本痕迹检测</h1>
+      <p>
+        把任意一段文本贴进来，扫描其中的<strong>零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格和同形异义字</strong>，
+        并尝试还原隐藏载荷。文本不出浏览器，不发任何请求。
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label for="input">待检测文本</label>
+        <textarea id="input" class="mono" placeholder="粘贴一段文本…（也可以先用下面的示例试试）"></textarea>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn--primary" id="btn-scan">扫描</button>
+        <button class="btn" id="btn-sample-zw">示例：零宽水印</button>
+        <button class="btn" id="btn-sample-tag">示例：提示词注入</button>
+        <button class="btn" id="btn-sample-homo">示例：同形异义字</button>
+        <button class="btn" id="btn-clear">清空</button>
+        <span class="muted" id="live-hint">输入时自动扫描</span>
+      </div>
+    </div>
+
+    <section id="result" hidden>
+      <div class="stat-row" id="stats"></div>
+
+      <div class="card" id="payload-card" hidden>
+        <h2 style="margin-top:0">还原出的隐藏载荷</h2>
+        <div id="payloads"></div>
+      </div>
+
+      <h2>可疑字符分布</h2>
+      <div class="card" id="groups"></div>
+
+      <h2>逐字符透视</h2>
+      <div class="card">
+        <p class="muted" style="margin-top:0">不可见字符会被渲染成彩色小标签，鼠标悬停可看码位。</p>
+        <div id="preview" class="preview"></div>
+      </div>
+
+      <div id="extra"></div>
+
+      <h2>清洗结果</h2>
+      <div class="card">
+        <div class="btn-row" style="margin-bottom:12px">
+          <button class="btn btn--primary" id="btn-copy-clean">复制干净文本</button>
+          <button class="btn" id="btn-apply-clean">替换上方输入框</button>
+          <span class="muted" id="clean-stat"></span>
+        </div>
+        <div class="field">
+          <textarea id="clean" class="mono" readonly></textarea>
+        </div>
+        <p class="muted" style="margin-bottom:0">
+          清洗规则：不可见字符整体删除；U+00A0 / U+202F 等异常空格还原成普通空格；全角空格保留。
+        </p>
+      </div>
+    </section>
+
+    <h2>它能查什么，不能查什么</h2>
+    <div class="note">
+      <strong>先说结论：这个工具查不出 Claude 的水印。</strong>
+      2026 年 8 月起 Anthropic 给 Claude 的文字输出加了隐形水印，但它<strong>不是</strong>往文本里塞不可见字符，
+      而是 SynthID-Text 那一类做法 —— 在生成每个 token 时按密钥对候选词做统计偏置，水印摊在整段文字的用词选择里。
+      所以搜零宽字符、搜「AI 味」的破折号，既证明不了、也排除不了它。真正的检测要靠官方持有密钥的检测接口。
+    </div>
+
+    <div class="table-scroll card">
+      <table>
+        <thead>
+          <tr><th>维度</th><th>字符级隐写（本页可查）</th><th>统计式水印（Claude / SynthID-Text）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>藏在哪</td><td>塞进额外的不可见码位</td><td>藏在 token 的选词概率分布里</td></tr>
+          <tr><td>可见性</td><td>肉眼不可见，但十六进制一看就露</td><td>码位完全正常，逐字符看不出任何异常</td></tr>
+          <tr><td>谁能读</td><td>任何人，规则公开</td><td>只有持密钥方，检测接口尚未完全开放</td></tr>
+          <tr><td>怎么破坏</td><td>删掉不可见字符即可，无损</td><td>需要改写措辞，短文本本身就容易失效</td></tr>
+          <tr><td>抗改写</td><td>极弱，复制到纯文本框可能就没了</td><td>较强，但文本越短越不可靠</td></tr>
+          <tr><td>典型用途</td><td>泄密溯源、提示词注入、Trojan Source</td><td>合规标注 AI 生成内容（欧盟 AI Act 第 50 条）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="site">
+      本页所有计算都在你的浏览器里完成 · <a href="../../">返回首页</a>
+    </footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="../../assets/invisible.js"></script>
+  <script src="index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/ai-text/#app",
+   "name": "AI 文本痕迹检测",
+   "url": "https://unstone.github.io/digital-watermarking/pages/ai-text/",
+   "description": "在线扫描文本中的零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，还原隐藏载荷并一键清洗。同时说明 Claude 的文字水印为什么用这种方式查不出来。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/ai-text/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "AI 文本痕迹检测",
+     "item": "https://unstone.github.io/digital-watermarking/pages/ai-text/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
+</body>
+</html>

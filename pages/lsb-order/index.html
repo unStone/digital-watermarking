@@ -1,30 +1,125 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title></title>
-        <script src="../utils.js"></script>
-        <script src="index.js"></script>
-    </head>
-    <body>
-        <p>
-            水印内容：
-            <input placeholder="输入英文或数字" type="text" id="waterMark"/>
-        </p>
-        <p>
-            请选择要输入水印的图片
-            <input type="file" name="file" id="encodeInput"/>
-        </p>
-        <p>
-            处理后的图片：<canvas id="encodeCanvas"></canvas>
-        </p>
-        <p>
-            请选择要解析水印的图片
-            <input type="file" name="file" id="decodeInput"/>
-        </p>
-        <p>
-            解析图片：<canvas id="decodeImageCanvas"></canvas>
-            解析出来的水印信息为：<span id="decodeText"></span>
-        </p>
-    </body>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LSB 图片隐写在线工具｜最低有效位文本水印嵌入与提取</title>
+<!-- seo:start -->
+  <meta name="description" content="把水印文本按位写进像素 RGB 分量的最低有效位，肉眼完全看不出来，可导出 PNG 并原样读回。">
+  <meta name="keywords" content="LSB 隐写,最低有效位,图片隐写,隐写术在线,盲水印,steganography">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+  <link rel="canonical" href="https://unstone.github.io/digital-watermarking/pages/lsb-order/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="数字水印实验室">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="LSB 图片隐写在线工具｜最低有效位文本水印嵌入与提取">
+  <meta property="og:description" content="把水印文本按位写进像素 RGB 分量的最低有效位，肉眼完全看不出来，可导出 PNG 并原样读回。">
+  <meta property="og:url" content="https://unstone.github.io/digital-watermarking/pages/lsb-order/">
+  <meta property="og:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="LSB 图片隐写在线工具｜最低有效位文本水印嵌入与提取">
+  <meta name="twitter:description" content="把水印文本按位写进像素 RGB 分量的最低有效位，肉眼完全看不出来，可导出 PNG 并原样读回。">
+  <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
+  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<!-- seo:end -->
+  <link rel="stylesheet" href="../../assets/theme.css">
+</head>
+<body>
+  <header data-topbar="../../"></header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>LSB 隐写 · 顺序编码</h1>
+      <p>
+        把水印文本按位写进每个像素 R/G/B 分量的最低有效位。像素值最多变化 1，肉眼完全看不出来。
+        数据格式是 8 bit 长度头加上每字符 16 bit 的 UTF-16 码元。
+      </p>
+    </div>
+
+    <div class="note">
+      <strong>必须导出 PNG。</strong>存成 JPEG 或者被平台二次压缩，最低有效位会被直接改写，水印就没了。
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">嵌入</h2>
+      <div class="field">
+        <label for="waterMark">水印内容（最多 255 个字符）</label>
+        <input type="text" id="waterMark" value="confidential-2026" placeholder="中英文都可以">
+      </div>
+      <div class="field">
+        <label for="encodeInput">选择原图（建议 PNG）</label>
+        <input type="file" id="encodeInput" accept="image/*">
+      </div>
+      <div class="btn-row" style="margin:14px 0">
+        <button class="btn btn--primary" id="download" disabled>下载带水印的 PNG</button>
+        <span class="muted" id="encodeStat"></span>
+      </div>
+      <div class="canvas-box"><canvas id="encodeCanvas"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">提取</h2>
+      <div class="field">
+        <label for="decodeInput">选择带水印的图片</label>
+        <input type="file" id="decodeInput" accept="image/*">
+      </div>
+      <p style="margin:14px 0 0">解析结果：<strong id="decodeText" class="muted">—</strong></p>
+      <div class="canvas-box" style="margin-top:14px"><canvas id="decodeImageCanvas"></canvas></div>
+    </div>
+
+    <footer class="site">图片不会上传 · <a href="../../">返回首页</a></footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="../utils.js"></script>
+  <script src="index.js"></script>
+<!-- ld:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/lsb-order/#app",
+   "name": "LSB 顺序编码隐写",
+   "url": "https://unstone.github.io/digital-watermarking/pages/lsb-order/",
+   "description": "把水印文本按位写进像素 RGB 分量的最低有效位，肉眼完全看不出来，可导出 PNG 并原样读回。",
+   "inLanguage": "zh-CN",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any (Web Browser)",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "@id": "https://unstone.github.io/digital-watermarking/pages/lsb-order/#breadcrumb",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "数字水印实验室",
+     "item": "https://unstone.github.io/digital-watermarking/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "LSB 顺序编码隐写",
+     "item": "https://unstone.github.io/digital-watermarking/pages/lsb-order/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld:end -->
+</body>
 </html>
