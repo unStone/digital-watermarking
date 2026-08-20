@@ -246,6 +246,7 @@
   </main>
 
   <script src="assets/ui.js"></script>
+  <script src="assets/signals.js"></script>
 <!-- ld:start -->
 <script type="application/ld+json">
 {
@@ -271,17 +272,17 @@
     {
      "@type": "Question",
      "name": "怎么检测文本里的不可见字符？",
-     "acceptedAnswer": { "@type": "Answer", "text": "把文本粘贴到本站的 AI 文本痕迹检测页面，即可扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，并还原隐藏载荷、一键清洗。" }
+     "acceptedAnswer": { "@type": "Answer", "text": "把文本粘贴到 AI 文本痕迹检测，即可扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，并还原隐藏载荷、一键清洗。" }
     },
     {
      "@type": "Question",
      "name": "C2PA 内容凭证是什么？怎么查看？",
-     "acceptedAnswer": { "@type": "Answer", "text": "C2PA Content Credentials 是一段带数字签名的清单，写明内容由谁生成、是否为 AI 生成、经过哪些编辑。把图片拖进本站的内容凭证读取器即可读出，JPEG 存在 APP11 段、PNG 存在 caBX 块、WebP 存在 C2PA 块。" }
+     "acceptedAnswer": { "@type": "Answer", "text": "C2PA Content Credentials 是一段带数字签名的清单，写明内容由谁生成、是否为 AI 生成、经过哪些编辑。把图片拖进内容凭证读取器即可读取。" }
     },
     {
      "@type": "Question",
      "name": "图片水印哪种最扛得住转发和压缩？",
-     "acceptedAnswer": { "@type": "Answer", "text": "频域盲水印。LSB 隐写只在无损格式下成立，一旦被存成 JPEG 或平台二次压缩，最低有效位会被直接抹掉；频域水印把信息摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。" }
+     "acceptedAnswer": { "@type": "Answer", "text": "频域盲水印。LSB 一旦被存成 JPEG 或平台二次压缩，最低有效位会被改写；频域水印把信息摊在全图频率成分里，更能抵抗裁剪、缩放、压缩和截屏。" }
     }
    ]
   },

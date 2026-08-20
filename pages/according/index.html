@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="../../assets/signals.css">
 </head>
 <body class="tool-page">
-  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/" style="color:var(--accent)">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
+  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/" aria-current="page">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
 
   <main class="wrap">
     <div class="page-head" data-section="04 — Visible &amp; ghost marks">
@@ -99,6 +99,7 @@
       <h2 id="principle-title">原理速览：一层负责声明，一层负责溯源</h2>
       <p>明水印直接改变像素并让人看见；全屏无痕水印把低不透明度文字铺满画面，正常浏览难以察觉，拉伸亮度区间后会显影。</p>
       <ol class="signal-steps"><li><b>绘制</b><span>生成平铺文字层</span></li><li><b>混合</b><span>叠加可见与无痕层</span></li><li><b>传播</b><span>水印进入截图像素</span></li><li><b>显影</b><span>拉伸色阶暴露信号</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>生成可见与低对比度平铺水印，并通过色阶拉伸辅助显影。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能保证在大面积裁剪、覆盖或针对性图像编辑后仍可追踪。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-img/">查看最低位平面</a><a class="btn" href="../fft/">体验更鲁棒的频域水印</a></div></nav>
     </section>
 

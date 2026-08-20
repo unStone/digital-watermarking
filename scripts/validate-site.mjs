@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize, relative, resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '..');
 const pages = [
@@ -25,6 +26,22 @@ const tools = [
   'pages/lsb-encryption/',
   'pages/fft/',
 ];
+const baselineFlag = process.argv.indexOf('--baseline');
+const baseline = baselineFlag >= 0 ? process.argv[baselineFlag + 1] : null;
+const seoFields = [
+  ['title', /<title>([^<]+)<\/title>/i],
+  ['description', /<meta\s+name="description"\s+content="([^"]+)"/i],
+  ['keywords', /<meta\s+name="keywords"\s+content="([^"]+)"/i],
+  ['robots', /<meta\s+name="robots"\s+content="([^"]+)"/i],
+  ['canonical', /<link\s+rel="canonical"\s+href="([^"]+)"/i],
+  ['og:title', /<meta\s+property="og:title"\s+content="([^"]+)"/i],
+  ['og:description', /<meta\s+property="og:description"\s+content="([^"]+)"/i],
+  ['og:url', /<meta\s+property="og:url"\s+content="([^"]+)"/i],
+  ['og:image', /<meta\s+property="og:image"\s+content="([^"]+)"/i],
+  ['twitter:title', /<meta\s+name="twitter:title"\s+content="([^"]+)"/i],
+  ['twitter:description', /<meta\s+name="twitter:description"\s+content="([^"]+)"/i],
+  ['twitter:image', /<meta\s+name="twitter:image"\s+content="([^"]+)"/i],
+];
 
 const failures = [];
 
@@ -39,6 +56,21 @@ function count(source, pattern) {
 function attribute(tag, name) {
   const match = tag.match(new RegExp(`\\s${name}=(?:"([^"]*)"|'([^']*)')`, 'i'));
   return match ? match[1] ?? match[2] : null;
+}
+
+function plainText(source) {
+  return source
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, '');
+}
+
+function structuredItems(value) {
+  return Array.isArray(value?.['@graph']) ? value['@graph'] : [value];
 }
 
 function resolveLocalLink(file, href) {
@@ -59,6 +91,17 @@ for (const file of pages) {
   const html = readFileSync(absolute, 'utf8');
   const expectedRoot = file === 'index.html' ? 'assets/' : '../../assets/';
 
+  if (baseline) {
+    try {
+      const previous = execFileSync('git', ['show', `${baseline}:${file}`], { cwd: root, encoding: 'utf8' });
+      for (const [name, pattern] of seoFields) {
+        if (previous.match(pattern)?.[1] !== html.match(pattern)?.[1]) fail(file, `${name} 与 ${baseline} 不一致`);
+      }
+    } catch (error) {
+      fail(file, `无法读取基线 ${baseline}：${error.message.split('\n')[0]}`);
+    }
+  }
+
   if (!/^<!doctype html>/i.test(html.trimStart())) fail(file, '缺少 HTML5 doctype');
   if (!/<html\s+lang="zh-CN"/i.test(html)) fail(file, 'html lang 必须为 zh-CN');
   if (!/<meta\s+name="viewport"/i.test(html)) fail(file, '缺少 viewport');
@@ -75,6 +118,7 @@ for (const file of pages) {
   if (!/<header\s+class="topbar"/i.test(html)) fail(file, '缺少静态 topbar');
   if (!/<main\b/i.test(html)) fail(file, '缺少 main');
   if (!/<footer\s+class="site"/i.test(html)) fail(file, '缺少全站 footer');
+  if (file !== 'index.html' && !/<div\s+class="boundary-grid"/i.test(html)) fail(file, '缺少“能做 / 不能做”能力边界');
 
   const footer = html.match(/<footer\s+class="site"[\s\S]*?<\/footer>/i)?.[0] ?? '';
   for (const tool of tools) {
@@ -84,18 +128,47 @@ for (const file of pages) {
     }
   }
 
+  const structured = [];
   for (const block of html.matchAll(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi)) {
     try {
-      JSON.parse(block[1]);
+      structured.push(JSON.parse(block[1]));
     } catch (error) {
       fail(file, `JSON-LD 无法解析：${error.message}`);
     }
   }
   if (!/<script\s+type="application\/ld\+json">/i.test(html)) fail(file, '缺少 JSON-LD');
 
+  if (file === 'index.html') {
+    const faq = structured.flatMap(structuredItems).find((item) => item?.['@type'] === 'FAQPage');
+    const visibleFaq = new Map();
+    const faqList = html.match(/<div\s+class="faq-list">([\s\S]*?)<\/div>\s*<\/section>/i)?.[1] ?? '';
+    for (const article of faqList.matchAll(/<article\s+class="faq-item">([\s\S]*?)<\/article>/gi)) {
+      const question = article[1].match(/<h3>([\s\S]*?)<\/h3>/i)?.[1];
+      const answer = article[1].match(/<p>([\s\S]*?)<\/p>/i)?.[1];
+      if (question && answer) visibleFaq.set(plainText(question), plainText(answer));
+    }
+    for (const entity of faq?.mainEntity ?? []) {
+      const visible = visibleFaq.get(plainText(entity.name ?? ''));
+      const answer = plainText(entity.acceptedAnswer?.text ?? '');
+      if (!visible || visible !== answer) fail(file, `FAQ 与 JSON-LD 不一致：${entity.name}`);
+    }
+    if (visibleFaq.size !== (faq?.mainEntity?.length ?? 0)) fail(file, '可见 FAQ 与 JSON-LD 数量不一致');
+  }
+
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
     const tag = match[0];
     if (attribute(tag, 'alt') === null) fail(file, `图片缺少 alt：${tag.slice(0, 80)}`);
+  }
+
+  for (const match of html.matchAll(/<(?:input|textarea|select)\b[^>]*>/gi)) {
+    const tag = match[0];
+    const type = attribute(tag, 'type');
+    if (['hidden', 'button', 'submit'].includes(type)) continue;
+    const id = attribute(tag, 'id');
+    const labelled = id && new RegExp(`<label\\s+[^>]*for=(?:"${id}"|'${id}')`, 'i').test(html);
+    if (!labelled && attribute(tag, 'aria-label') === null && attribute(tag, 'aria-labelledby') === null) {
+      fail(file, `表单控件缺少显式标签：${tag.slice(0, 80)}`);
+    }
   }
 
   for (const match of html.matchAll(/<a\b[^>]*\shref=(?:"([^"]*)"|'([^']*)')[^>]*>/gi)) {
@@ -114,4 +187,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`站点校验通过：${pages.length} 个入口页，SEO、结构、图片与内部链接均有效。`);
+console.log(`站点校验通过：${pages.length} 个入口页，SEO、结构、表单、图片与内部链接均有效${baseline ? `；SEO 与 ${baseline} 一致` : ''}。`);

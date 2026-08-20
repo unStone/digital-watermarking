@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="../../assets/signals.css">
 </head>
 <body class="tool-page">
-  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/" style="color:var(--accent)">频域水印</a></nav></header>
+  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/" aria-current="page">频域水印</a></nav></header>
 
   <main class="wrap">
     <div class="page-head" data-section="09 — Frequency domain">
@@ -104,6 +104,7 @@
       <h2 id="principle-title">原理速览：水印不属于某个像素，而属于整幅频谱</h2>
       <p>傅里叶变换把图像从空间域转换为频率域。对称写入的水印经过逆变换后分散到全图，因此局部裁剪与轻度压缩更难完全抹除。</p>
       <ol class="signal-steps"><li><b>变换</b><span>空域转频域</span></li><li><b>写入</b><span>频谱对称叠加</span></li><li><b>还原</b><span>逆变换回图片</span></li><li><b>检测</b><span>观察频谱信号</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>将可视信号分散进频谱，并在轻度压缩或裁剪后辅助观察。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能保证抵抗强压缩或大面积裁剪，也不等同于带身份签名的来源证明。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-order/">对比脆弱的最低位水印</a><a class="btn" href="../according/">体验截图水印</a></div></nav>
     </section>
 

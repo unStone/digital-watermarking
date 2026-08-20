@@ -78,6 +78,7 @@
       <h2 id="principle-title">原理速览：只改每个颜色值的最后一位</h2>
       <p>一个 8 bit 颜色值的最低位只贡献 1/255 的亮度。顺序写入载荷时肉眼难辨，但 JPEG 量化会批量改写这些位。</p>
       <ol class="signal-steps"><li><b>编码</b><span>生成长度头与位串</span></li><li><b>写入</b><span>替换 RGB 最低位</span></li><li><b>保存</b><span>导出无损 PNG</span></li><li><b>读取</b><span>按顺序恢复字符</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>在无损图片中嵌入并按顺序恢复短文本载荷。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能抵抗 JPEG、社交平台压缩、缩放或像素重绘。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-encryption/">给载荷增加口令</a><a class="btn" href="../fft/">对比频域水印</a></div></nav>
     </section>
 

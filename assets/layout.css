@@ -51,6 +51,7 @@ body { min-width: 0; }
   transition: color .15s, background .15s;
 }
 .topbar nav a:hover { background: var(--accent-bg); color: var(--accent); text-decoration: none; }
+.topbar nav a[aria-current="page"] { background: var(--accent-bg); color: var(--accent); }
 
 .wrap { width: min(100%, 1120px); margin: 0 auto; padding: 0 24px 88px; }
 .wrap--wide { width: min(100%, 1240px); }
@@ -153,6 +154,12 @@ body { min-width: 0; }
 .principle-brief h2 { margin: 0 0 8px; }
 .principle-brief > p { max-width: 72ch; margin: 0; color: var(--text-soft); }
 
+.boundary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+.boundary-item { padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--surface) 88%, transparent); }
+.boundary-item strong { display: block; margin-bottom: 5px; color: var(--text); font-size: 12px; }
+.boundary-item p { margin: 0; color: var(--text-soft); font-size: 12px; }
+.boundary-item--limit { border-color: color-mix(in srgb, var(--warn) 28%, var(--border)); }
+
 .related-tools { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--border); }
 .related-tools strong { display: block; margin-bottom: 10px; font-size: 13px; }
 .related-tools .btn { min-height: 36px; padding: 7px 12px; }
@@ -183,6 +190,7 @@ footer.site {
   .card { padding: 18px; }
   .tile { min-height: 138px; }
   .principle-brief { padding: 22px 18px; }
+  .boundary-grid { grid-template-columns: 1fr; }
   .site-nav { grid-template-columns: 1fr 1fr; }
 }
 

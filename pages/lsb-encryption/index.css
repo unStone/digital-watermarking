@@ -34,7 +34,7 @@
   border: 1px solid var(--accent);
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font: inherit;
   font-size: 13.5px;
   font-weight: 600;

@@ -81,6 +81,7 @@
       <h2 id="principle-title">原理速览：先加密载荷，再打散写入像素</h2>
       <p>口令通过 SHA-256 生成定位序列，载荷用 AES 加密后写入分散的颜色最低位。知道 LSB 算法仍不等于知道位置和明文。</p>
       <ol class="signal-steps"><li><b>加密</b><span>AES 保护明文</span></li><li><b>定位</b><span>哈希生成写入顺序</span></li><li><b>写位</b><span>修改颜色最低位</span></li><li><b>解密</b><span>同口令恢复内容</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>在隐藏前加密载荷，并用相同口令恢复明文。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能抵抗 JPEG 或缩放；口令遗失后也无法恢复内容。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-order/">对比不加密的顺序编码</a><a class="btn" href="../fft/">对比频域水印</a></div></nav>
     </section>
 

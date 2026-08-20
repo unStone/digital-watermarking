@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="../../assets/signals.css">
 </head>
 <body class="tool-page">
-  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/" style="color:var(--accent)">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
+  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/" aria-current="page">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
 
   <main class="wrap">
     <div class="page-head" data-section="03 — Text steganography">
@@ -105,6 +105,7 @@
       <h2 id="principle-title">原理速览：载荷藏在字符缝隙里</h2>
       <p>载荷先编码成 UTF-8，再映射到零宽字符、变体选择符或 Unicode Tag。显示出来的字数不变，但复制、清洗和纯文本转换都可能破坏水印。</p>
       <ol class="signal-steps"><li><b>编码</b><span>文本转 UTF-8</span></li><li><b>映射</b><span>字节转不可见码位</span></li><li><b>插入</b><span>附着到正常文本</span></li><li><b>提取</b><span>反向恢复载荷</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>用三种公开方案嵌入、提取可追踪的字符级载荷。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能抵抗主动清洗、改写或丢弃特殊 Unicode 码位的平台。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../ai-text/">扫描并清洗不可见字符</a><a class="btn" href="../lsb-order/">把载荷藏进图片</a></div></nav>
     </section>
 

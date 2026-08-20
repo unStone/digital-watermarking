@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="index.css">
 </head>
 <body class="tool-page">
-  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/" style="color:var(--accent)">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
+  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/" aria-current="page">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
 
   <main class="wrap wrap--wide">
     <div class="page-head" data-section="01 — Text forensics">
@@ -87,6 +87,7 @@
           <span class="muted" id="clean-stat"></span>
         </div>
         <div class="field">
+          <label for="clean">清洗后的文本</label>
           <textarea id="clean" class="mono" readonly></textarea>
         </div>
         <p class="muted" style="margin-bottom:0">
@@ -123,6 +124,7 @@
       <h2 id="principle-title">原理速览：检测额外码位，不判断文风</h2>
       <p>本页逐字符读取 Unicode 码位，把不可见载荷、方向控制和跨字母表伪装暴露出来。统计式水印的码位完全正常，必须由持密钥方检测。</p>
       <ol class="signal-steps"><li><b>读取</b><span>遍历真实码位</span></li><li><b>分类</b><span>识别六类风险</span></li><li><b>还原</b><span>尝试解出载荷</span></li><li><b>清洗</b><span>删除或标准化</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>定位并清洗零宽字符、方向控制符、异常空格和跨字母表伪装。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能检测 token 概率水印，也不能仅凭文风判断作者是不是 AI。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../text/">嵌入字符级水印</a><a class="btn" href="../c2pa/">读取文件来源凭证</a></div></nav>
     </section>
 

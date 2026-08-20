@@ -104,6 +104,7 @@
       <h2 id="principle-title">原理速览：把整张文字图写进位平面</h2>
       <p>文字先画成透明图层，再用 alpha 值决定目标通道最低位。提取时无需知道字符编码，只要把该位放大为黑白图即可显影。</p>
       <ol class="signal-steps"><li><b>绘图</b><span>生成文字 alpha 层</span></li><li><b>写位</b><span>映射到目标颜色通道</span></li><li><b>保存</b><span>保持 PNG 无损</span></li><li><b>显影</b><span>放大最低位平面</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>把文字图写进指定颜色通道的最低位，并将整个位平面显影。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能在压缩、缩放或重新采样后保持原有最低位图形。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-order/">对比顺序编码</a><a class="btn" href="../according/">体验全屏无痕水印</a></div></nav>
     </section>
 

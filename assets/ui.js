@@ -73,7 +73,7 @@
       links
         .map(([href, label]) =>
           href === current
-            ? '<a href="' + base + 'pages/' + href + '" style="color:var(--accent)">' + label + '</a>'
+            ? '<a href="' + base + 'pages/' + href + '" aria-current="page">' + label + '</a>'
             : '<a href="' + base + 'pages/' + href + '">' + label + '</a>'
         )
         .join('') +

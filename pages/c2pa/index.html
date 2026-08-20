@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="index.css">
 </head>
 <body class="tool-page">
-  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/" style="color:var(--accent)">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
+  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/" aria-current="page">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
 
   <main class="wrap wrap--wide">
     <div class="page-head" data-section="02 — Content provenance">
@@ -48,6 +48,7 @@
 
     <div class="card">
       <div id="drop" class="drop">
+        <label for="file">选择要读取内容凭证的文件</label>
         <input type="file" id="file" accept="image/*,.svg,.mp4,.webp">
         <p class="muted" style="margin:10px 0 0">
           支持 JPEG（APP11）、PNG（caBX 块）、WebP（C2PA 块），也可以直接把文件拖到这块区域
@@ -112,6 +113,7 @@
       <h2 id="principle-title">原理速览：内容、动作与签名组成来源链</h2>
       <p>C2PA 把创作工具、编辑动作、素材关系和内容哈希写入签名清单。它不是藏在像素里的水印，重新编码或截图通常会让清单丢失。</p>
       <ol class="signal-steps"><li><b>提取</b><span>定位 JUMBF 数据</span></li><li><b>解码</b><span>读取声明与断言</span></li><li><b>关联</b><span>恢复素材关系</span></li><li><b>展示</b><span>标记签名与 AI 来源</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>读取文件中仍然存在的清单、编辑动作、AI 来源声明和签名字段。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>本页不做证书链验签，也无法恢复截图或重新编码时已经丢失的凭证。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../exif/">检查 EXIF 隐私</a><a class="btn" href="../fft/">体验像素内盲水印</a></div></nav>
     </section>
 

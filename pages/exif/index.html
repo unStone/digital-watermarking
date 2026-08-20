@@ -82,6 +82,7 @@
       <h2 id="principle-title">原理速览：元信息与像素是两条通道</h2>
       <p>EXIF 写在图片文件结构中，不改变画面像素。重新编码通常会移除它，但原始照片可能携带设备、时间和 GPS 等敏感信息。</p>
       <ol class="signal-steps"><li><b>读取</b><span>解析文件头</span></li><li><b>定位</b><span>找到 EXIF 标签</span></li><li><b>展示</b><span>解释设备与位置</span></li><li><b>清除</b><span>重绘并导出像素</span></li></ol>
+      <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>读取常见 EXIF 标签，并重绘导出不携带原元信息的图片副本。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能恢复已被平台删除的元信息，也不能仅凭 EXIF 证明内容真实。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../c2pa/">读取带签名的内容凭证</a><a class="btn" href="../according/">给导出图片添加明水印</a></div></nav>
     </section>
 
