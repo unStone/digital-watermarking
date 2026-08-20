@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang='zh-CN'>
+<html lang="zh-CN">
 <head>
-    <meta charset='utf-8'>
-    <title>LSB 口令加密隐写｜带 AES 加密的图片隐写工具</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LSB 口令加密隐写｜带 AES 加密的图片隐写工具</title>
 <!-- seo:start -->
   <meta name="description" content="写入图片前先用 SJCL 做 AES 加密，没有口令就算知道算法也读不出内容。基于 PixelJihad 的实现，作对照演示。">
   <meta name="keywords" content="加密隐写,AES 隐写,LSB 加密,图片藏字,PixelJihad,steganography">
@@ -21,66 +22,77 @@
   <meta name="twitter:title" content="LSB 口令加密隐写｜带 AES 加密的图片隐写工具">
   <meta name="twitter:description" content="写入图片前先用 SJCL 做 AES 加密，没有口令就算知道算法也读不出内容。基于 PixelJihad 的实现，作对照演示。">
   <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
-  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f9fc" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#08101d" media="(prefers-color-scheme: dark)">
   <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
   <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 <!-- seo:end -->
-    <meta name='viewport'
-        content='width=device-width, initial-scale=1, maximum-scale=1'>
-    <link href='../../assets/theme.css' type='text/css' rel='stylesheet' />
-    <link href='./index.css' type='text/css' rel='stylesheet' />
-    <script src='../../assets/ui.js' type='text/javascript'></script>
-    <script src='sjcl.js' type='text/javascript'></script>
-    <script src='./index.js' type='text/javascript'></script>
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="stylesheet" href="../../assets/layout.css">
+  <link rel="stylesheet" href="../../assets/signals.css">
+  <link rel="stylesheet" href="index.css">
 </head>
-<body>
-    <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
-    <script>document.addEventListener('DOMContentLoaded', function () { UI.mountTopbar(''); });</script>
-    <h1>LSB 隐写 · 口令加密</h1>
-    <div id='about' class='section'>
-        写入前先用 SJCL 做 AES 加密，没有口令，就算知道算法也读不出内容。<br/>
-        选图后会自动尝试解码；导出请务必用 PNG，JPEG 压缩会直接抹掉最低有效位。<br/>
-        本页直接沿用了
-        <a href='https://github.com/oakes/PixelJihad' target='_blank' rel='noopener'>PixelJihad</a>
-        （作者 Zach Oakes）的实现，仅作对照演示。
+<body class="tool-page">
+  <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
+
+  <main class="wrap">
+    <div class="page-head" data-section="08 — Encrypted steganography">
+      <h1>LSB 隐写 · 口令加密</h1>
+      <p>写入前先用 SJCL 做 AES 加密，没有口令，就算知道算法也读不出内容。选图后会自动尝试解码；导出请务必用 PNG。</p>
     </div>
-    <div id='main' class='section dark'>
-        <div class='step'>选择一张图片</div>
-        <img id='preview' class='preview hide' />
-        <div class='sectionbody'>
-            <input type='file' id='file' />
+
+    <div class="note">
+      <strong>这是第三方实现的对照实验。</strong>本页沿用 <a href="https://github.com/oakes/PixelJihad" target="_blank" rel="noopener">PixelJihad</a>（作者 Zach Oakes）。JPEG 压缩会直接抹掉最低有效位。
+    </div>
+
+    <section id="main" class="section dark">
+      <h2 class="step">01 · 选择一张图片</h2>
+      <img id="preview" class="preview hide" alt="待写入或读取隐藏信息的图片预览">
+      <div class="sectionbody"><label for="file">原始图片（建议 PNG）</label><input type="file" id="file" accept="image/*"></div>
+    </section>
+
+    <section id="choose" class="section dark hide">
+      <h2 class="step">02 · 写入或读取</h2>
+      <div class="sectionbody">
+        <div class="left">
+          <label for="message">要隐藏的内容</label>
+          <textarea id="message" class="message" maxlength="1000" placeholder="最多 1000 个字符"></textarea>
+          <label for="password">写入口令（可选）</label>
+          <input type="password" id="password" class="password" placeholder="留空则只做隐写，不加密">
+          <button id="encode" class="submit">加密并写入</button>
         </div>
-    </div>
-    <div id='choose' class='section dark hide'>
-        <div class='step'>想做什么？</div>
-        <div class='sectionbody'>
-            <div class='left'>
-                <textarea id='message' class='message' maxlength='1000'
-                    placeholder='输入要隐藏的内容'></textarea>
-                <input type='password' id='password' class='password'
-                    placeholder='口令（可选）' />
-                <button id='encode' class='submit'>写入</button>
-            </div>
-            <div class='right'>
-                <input type='password' id='password2' class='password'
-                    placeholder='口令' />
-                <button id='decode' class='submit'>读取</button>
-            </div>
+        <div class="right">
+          <label for="password2">读取口令</label>
+          <input type="password" id="password2" class="password" placeholder="未加密时留空">
+          <button id="decode" class="submit">读取隐藏内容</button>
         </div>
-    </div>
-    <div id='reveal' class='section dark hide'>
-        <div class='step'>隐藏的内容</div>
-        <div id='messageDecoded' class='sectionbody'></div>
-    </div>
-    <canvas id='canvas' class='hide'></canvas>
-    <div class='section'><img id='output' /></div>
-    <footer class="site" style="max-width:640px;margin:0 auto;text-align:left">
+      </div>
+    </section>
+
+    <section id="reveal" class="section dark hide">
+      <h2 class="step">03 · 隐藏的内容</h2>
+      <div id="messageDecoded" class="sectionbody"></div>
+    </section>
+
+    <canvas id="canvas" class="hide"></canvas>
+    <div class="section output-section"><img id="output" alt="已经写入加密隐藏信息的输出图片"></div>
+
+    <section class="principle-brief signal-grid" aria-labelledby="principle-title">
+      <h2 id="principle-title">原理速览：先加密载荷，再打散写入像素</h2>
+      <p>口令通过 SHA-256 生成定位序列，载荷用 AES 加密后写入分散的颜色最低位。知道 LSB 算法仍不等于知道位置和明文。</p>
+      <ol class="signal-steps"><li><b>加密</b><span>AES 保护明文</span></li><li><b>定位</b><span>哈希生成写入顺序</span></li><li><b>写位</b><span>修改颜色最低位</span></li><li><b>解密</b><span>同口令恢复内容</span></li></ol>
+      <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-order/">对比不加密的顺序编码</a><a class="btn" href="../fft/">对比频域水印</a></div></nav>
+    </section>
+
+    <footer class="site">
       <nav class="site-nav" aria-label="全部工具"><a href="../../pages/ai-text/">AI 文本痕迹检测</a><a href="../../pages/c2pa/">C2PA 内容凭证读取器</a><a href="../../pages/text/">文本隐形水印</a><a href="../../pages/according/">明水印与全屏无痕水印</a><a href="../../pages/exif/">EXIF 元信息</a><a href="../../pages/lsb-order/">LSB 顺序编码</a><a href="../../pages/lsb-img/">LSB 图形通道</a><a href="../../pages/lsb-encryption/">LSB 口令加密</a><a href="../../pages/fft/">频域盲水印</a></nav>
-      
-        图片不会上传 · <a href="../../">返回首页</a> ·
-        <a href="../lsb-order/">对比不加密的 LSB 顺序编码</a>
+      图片不会上传 · <a href="../../">返回首页</a>
     </footer>
+  </main>
+
+  <script src="../../assets/ui.js"></script>
+  <script src="sjcl.js"></script>
+  <script src="index.js"></script>
 <!-- ld:start -->
 <script type="application/ld+json">
 {
@@ -96,28 +108,14 @@
    "applicationCategory": "UtilitiesApplication",
    "operatingSystem": "Any (Web Browser)",
    "isAccessibleForFree": true,
-   "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "CNY"
-   }
+   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" }
   },
   {
    "@type": "BreadcrumbList",
    "@id": "https://unstone.github.io/digital-watermarking/pages/lsb-encryption/#breadcrumb",
    "itemListElement": [
-    {
-     "@type": "ListItem",
-     "position": 1,
-     "name": "数字水印实验室",
-     "item": "https://unstone.github.io/digital-watermarking/"
-    },
-    {
-     "@type": "ListItem",
-     "position": 2,
-     "name": "LSB 口令加密隐写",
-     "item": "https://unstone.github.io/digital-watermarking/pages/lsb-encryption/"
-    }
+    { "@type": "ListItem", "position": 1, "name": "数字水印实验室", "item": "https://unstone.github.io/digital-watermarking/" },
+    { "@type": "ListItem", "position": 2, "name": "LSB 口令加密隐写", "item": "https://unstone.github.io/digital-watermarking/pages/lsb-encryption/" }
    ]
   }
  ]

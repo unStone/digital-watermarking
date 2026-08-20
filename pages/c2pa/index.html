@@ -28,13 +28,15 @@
   <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 <!-- seo:end -->
   <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="stylesheet" href="../../assets/layout.css">
+  <link rel="stylesheet" href="../../assets/signals.css">
   <link rel="stylesheet" href="index.css">
 </head>
-<body>
+<body class="tool-page">
   <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/" style="color:var(--accent)">内容凭证</a><a href="../../pages/ai-text/">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
 
   <main class="wrap wrap--wide">
-    <div class="page-head">
+    <div class="page-head" data-section="02 — Content provenance">
       <span class="badge badge--accent">新增</span>
       <h1>内容凭证读取器（C2PA）</h1>
       <p>
@@ -105,6 +107,13 @@
       如果你的诉求是<strong>发图前清掉隐私信息</strong>（GPS、设备型号），
       <a href="../exif/">EXIF 页面</a>的「导出无元信息副本」就是干这个的，它重新编码一遍，所有元数据一起清掉。
     </div>
+
+    <section class="principle-brief signal-grid" aria-labelledby="principle-title">
+      <h2 id="principle-title">原理速览：内容、动作与签名组成来源链</h2>
+      <p>C2PA 把创作工具、编辑动作、素材关系和内容哈希写入签名清单。它不是藏在像素里的水印，重新编码或截图通常会让清单丢失。</p>
+      <ol class="signal-steps"><li><b>提取</b><span>定位 JUMBF 数据</span></li><li><b>解码</b><span>读取声明与断言</span></li><li><b>关联</b><span>恢复素材关系</span></li><li><b>展示</b><span>标记签名与 AI 来源</span></li></ol>
+      <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../exif/">检查 EXIF 隐私</a><a class="btn" href="../fft/">体验像素内盲水印</a></div></nav>
+    </section>
 
     <footer class="site">
       <nav class="site-nav" aria-label="全部工具"><a href="../../pages/ai-text/">AI 文本痕迹检测</a><a href="../../pages/c2pa/">C2PA 内容凭证读取器</a><a href="../../pages/text/">文本隐形水印</a><a href="../../pages/according/">明水印与全屏无痕水印</a><a href="../../pages/exif/">EXIF 元信息</a><a href="../../pages/lsb-order/">LSB 顺序编码</a><a href="../../pages/lsb-img/">LSB 图形通道</a><a href="../../pages/lsb-encryption/">LSB 口令加密</a><a href="../../pages/fft/">频域盲水印</a></nav>

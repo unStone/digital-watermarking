@@ -22,156 +22,230 @@
   <meta name="twitter:title" content="数字水印实验室｜AI 文本水印检测 · C2PA 内容凭证 · 图片盲水印在线工具">
   <meta name="twitter:description" content="9 个纯前端水印工具：检测文本里的零宽字符与不可见字符、读取图片的 C2PA 内容凭证与 AI 生成声明、LSB 隐写与频域盲水印。打开即用，文件不上传。也讲清 Claude 文字水印到底是什么。">
   <meta name="twitter:image" content="https://unstone.github.io/digital-watermarking/assets/og.png">
-  <meta name="theme-color" content="#c2603d" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#14130f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f9fc" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#08101d" media="(prefers-color-scheme: dark)">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <!-- seo:end -->
   <link rel="stylesheet" href="assets/theme.css">
-  <style>
-    .hero { padding: 56px 0 24px; }
-    .hero h1 { font-size: 38px; line-height: 1.25; letter-spacing: -.03em; margin: 12px 0 14px; }
-    .hero p.lead { font-size: 16px; color: var(--text-soft); max-width: 62ch; margin: 0; }
-    @media (max-width: 600px) { .hero h1 { font-size: 28px; } }
-    .kicker { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .tile .tag { margin-left: auto; }
-  </style>
+  <link rel="stylesheet" href="assets/layout.css">
+  <link rel="stylesheet" href="assets/signals.css">
 </head>
-<body>
-  <header class="topbar"><a class="brand" href="./">数字水印实验室</a><span class="spacer"></span><nav><a href="./pages/c2pa/">内容凭证</a><a href="./pages/ai-text/">AI 文本检测</a><a href="./pages/text/">文本水印</a><a href="./pages/according/">图片水印</a><a href="./pages/fft/">频域水印</a></nav></header>
+<body class="home-page">
+  <header class="topbar">
+    <a class="brand" href="./">数字水印实验室</a>
+    <span class="spacer"></span>
+    <nav aria-label="主要导航">
+      <a href="#principles">原理图谱</a>
+      <a href="#tools">全部工具</a>
+      <a href="./pages/c2pa/">内容凭证</a>
+      <a href="./pages/ai-text/">AI 文本检测</a>
+      <a href="https://github.com/unStone/digital-watermarking" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
 
-  <main class="wrap">
-    <section class="hero">
-      <div class="kicker">
-        <span class="badge badge--accent">2026.08 更新</span>
-        <span class="muted">Claude 开始给文字加隐形水印，图片附带 C2PA 内容凭证</span>
+  <main class="wrap wrap--wide">
+    <section class="home-hero" aria-labelledby="hero-title">
+      <div class="hero-visual signal-stage" aria-hidden="true">
+        <svg class="signal-routes" viewBox="0 0 760 660" preserveAspectRatio="xMidYMid slice">
+          <path class="route route--quiet" d="M6 196 C186 196 178 308 356 308 S554 444 754 444"/>
+          <path class="route route--quiet" d="M26 514 C184 514 224 382 360 382 S554 216 734 216"/>
+          <path class="route route--live" d="M0 330 C194 330 218 330 360 330 S572 330 760 330"/>
+          <path class="route route--pulse" d="M0 330 C194 330 218 330 360 330 S572 330 760 330"/>
+        </svg>
+        <span class="route-node node--a"></span><span class="route-node node--b"></span>
+        <span class="route-node node--c"></span><span class="route-node node--d"></span>
+        <div class="core-orbit">
+          <i></i><i></i><i></i>
+          <span class="core-dot"></span>
+        </div>
+        <div class="stage-meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="stage-readout">SIGNAL / VERIFIED</span>
       </div>
-      <h1>数字水印实验室</h1>
-      <p class="lead">
-        9 个水印 / 隐写 / 溯源工具的纯前端实现，打开即用，不上传任何文件。
-        从最土的明水印到频域盲水印，从零宽字符隐写到 C2PA 内容凭证读取，
-        再到 Claude 那套统计式水印的原理对照，一次讲清楚。
-      </p>
-      <div class="btn-row" style="margin-top:24px">
-        <a class="btn btn--primary" href="./pages/ai-text/">检测一段文本有没有被做手脚</a>
-        <a class="btn" href="./pages/c2pa/">读一张图的 AI 生成凭证</a>
-        <a class="btn" href="https://github.com/unStone/digital-watermarking" target="_blank" rel="noopener">GitHub 源码</a>
+      <div class="hero-copy">
+        <span class="section-label">Digital Watermarking Lab · 09 Tools</span>
+        <h1 id="hero-title"><span class="hero-line">看不见的</span><span class="hero-line">数字水印，</span><span class="hero-line hero-accent">也能看懂。</span></h1>
+        <p>
+          从零宽字符、LSB 像素隐写到频域盲水印与 C2PA 内容凭证，
+          在浏览器里完成检测、嵌入、提取和验证。文件始终留在你的设备。
+        </p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="./pages/ai-text/">检测一段文本 →</a>
+          <a class="btn" href="./pages/c2pa/">读取图片凭证</a>
+        </div>
+      </div>
+      <div class="trust-line" aria-label="站点特性">
+        <span>100% LOCAL</span><span>NO UPLOAD</span><span>OPEN SOURCE</span><span>LIGHT / DARK</span>
       </div>
     </section>
 
-    <div class="note">
-      <strong>关于 Claude 的文字水印，先澄清一个误会。</strong>
-      它<strong>不是</strong>往输出里塞零宽字符或者奇怪的空格，而是 SynthID-Text 那一路：生成时按密钥对候选 token 做统计偏置，
-      水印摊在整段文字的用词选择里。所以「搜一下有没有不可见字符」既证明不了、也排除不了它。
-      两类水印的差别，<a href="./pages/ai-text/">检测器页面有一张对照表</a>。
-    </div>
+    <section aria-labelledby="flow-title">
+      <div class="section-heading">
+        <div><span class="section-label">01 — Signal flow</span><h2 id="flow-title">一条水印，经历四个阶段。</h2></div>
+        <p>不论载体是文字、像素还是文件元数据，核心问题始终是：信息藏在哪里，传播后还剩多少，最后怎样证明它存在。</p>
+      </div>
+      <ol class="signal-flow">
+        <li class="flow-step"><span class="flow-number">01</span><h3>载荷</h3><p>版权信息、分发编号、来源声明或 AI 生成标记。</p></li>
+        <li class="flow-step"><span class="flow-number">02</span><h3>嵌入</h3><p>写进字符码位、像素最低位、频率分量或签名清单。</p></li>
+        <li class="flow-step"><span class="flow-number">03</span><h3>传播</h3><p>复制、压缩、裁剪、截图与平台二次处理会改变信号。</p></li>
+        <li class="flow-step"><span class="flow-number">04</span><h3>检测</h3><p>按公开规则提取，或用密钥和签名验证统计痕迹与来源。</p></li>
+      </ol>
+    </section>
 
-    <h2>2026 年水印领域在发生什么</h2>
-    <div class="table-scroll card">
-      <table>
-        <thead><tr><th>动向</th><th>具体是什么</th><th>本站对应</th></tr></thead>
-        <tbody>
-          <tr><td>文字进入水印时代</td><td>Claude 自 2026-08-02 起对文字输出嵌入 SynthID-Text 式统计水印，全局生效、无法关闭</td><td><a href="./pages/ai-text/">原理与边界对照</a></td></tr>
-          <tr><td>双层方案成为事实标准</td><td>不可见水印（藏在像素 / 波形 / token 分布里）+ C2PA 签名清单（藏在文件元数据里），一层被抹掉还有另一层</td><td><a href="./pages/c2pa/">内容凭证读取器</a></td></tr>
-          <tr><td>覆盖到全模态</td><td>SynthID 已覆盖图像、音频、视频、文本；OpenAI 把音频也纳入了水印与验证工具</td><td>—</td></tr>
-          <tr><td>监管是主要推力</td><td>欧盟 AI Act 第 50 条自 2026-08-02 起对新上线系统生效，要求生成内容带机器可读标记</td><td>—</td></tr>
-          <tr><td>检测接口还没开放</td><td>Anthropic 已宣布会提供文字水印检测 API，但截至目前仍不可调用，也没公布定价</td><td>—</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <section id="principles" aria-labelledby="principles-title">
+      <div class="section-heading">
+        <div><span class="section-label">02 — Principle atlas</span><h2 id="principles-title">水印藏在哪里？</h2></div>
+        <p>四种信号位置决定了隐蔽性、鲁棒性和检测方式。先认清载体，再选择工具。</p>
+      </div>
+      <div class="principle-grid">
+        <figure class="principle-card principle-card--dark">
+          <figcaption>
+            <span class="badge badge--accent">文本 · Token</span>
+            <h3>统计式文本水印</h3>
+            <p>生成时对候选 token 做密钥控制的概率偏置，水印分散在整段文字的选词里，而不是额外塞入不可见字符。</p>
+          </figcaption>
+          <div class="atlas-visual token-field" aria-hidden="true">
+            <div class="token-stream token-stream--a"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="token-stream token-stream--b"><i></i><i></i><i></i><i></i></div>
+            <span class="token-selector"><b></b></span>
+            <svg viewBox="0 0 720 210" preserveAspectRatio="none">
+              <path class="token-baseline" d="M0 138 C72 138 88 138 148 138 S230 138 292 138 S370 138 434 138 S520 138 720 138"/>
+              <path class="token-wave" d="M0 138 C72 138 88 74 148 74 S230 166 292 166 S370 58 434 58 S520 138 720 138"/>
+            </svg>
+          </div>
+        </figure>
+        <div class="principle-stack">
+          <article class="principle-card signal-grid">
+            <span class="badge">图片 · LSB</span>
+            <h3>像素最低位</h3>
+            <p>只替换 RGB 数值的最后一位，变化最多为 1。肉眼难以察觉，但重新压缩就会破坏。</p>
+            <div class="mini-signal" aria-label="二进制最低位替换示意">
+              <strong>PIXEL · CHANNEL B</strong>
+              <div class="bit-demo"><i>1</i><i>0</i><i>1</i><i>0</i><i>1</i><i>1</i><i>0</i><i>1</i></div>
+            </div>
+          </article>
+          <article class="principle-card signal-grid">
+            <span class="badge">图片 · FFT</span>
+            <h3>频域能量</h3>
+            <p>把信息摊进全图的频率成分，局部裁剪或压缩后仍可能留下可读信号。</p>
+            <div class="mini-signal" aria-label="频谱能量峰值示意">
+              <strong>FREQUENCY · ENERGY</strong>
+              <div class="spectrum-demo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="principle-grid" style="margin-top:16px">
+        <figure class="principle-card">
+          <figcaption><span class="badge">像素 ↔ 频域</span><h3>同一张图，两种信号空间</h3><p>LSB 依赖原始像素值，FFT 关注全局频率。前者容量高但脆弱，后者更能扛住二次传播。</p></figcaption>
+          <div class="atlas-visual transform-field" aria-hidden="true">
+            <div class="pixel-plane"><i></i><i></i><i></i><i></i></div>
+            <div class="transform-axis"><span></span></div>
+            <div class="frequency-field"><i></i><i></i><i></i><b></b></div>
+            <span class="field-label field-label--left">PIXEL SPACE</span>
+            <span class="field-label field-label--right">FREQUENCY</span>
+          </div>
+        </figure>
+        <figure class="principle-card principle-card--dark">
+          <figcaption><span class="badge badge--accent">文件 · C2PA</span><h3>带签名的来源链</h3><p>内容凭证记录生成者、编辑动作和素材关系。它公开可验证，但重新编码或截图通常会让凭证丢失。</p></figcaption>
+          <div class="atlas-visual provenance-field" aria-hidden="true">
+            <svg viewBox="0 0 720 220" preserveAspectRatio="none">
+              <path class="provenance-track" d="M40 146 C150 146 151 84 254 84 S365 146 462 146 S566 84 674 84"/>
+              <path class="provenance-packet" d="M40 146 C150 146 151 84 254 84 S365 146 462 146 S566 84 674 84"/>
+            </svg>
+            <span class="proof-node proof-node--1"><b>01</b></span>
+            <span class="proof-node proof-node--2"><b>02</b></span>
+            <span class="proof-node proof-node--3"><b>03</b></span>
+            <span class="proof-node proof-node--4"><b>✓</b></span>
+            <span class="proof-caption">SIGNED PROVENANCE</span>
+          </div>
+        </figure>
+      </div>
+    </section>
 
-    <h2>文本</h2>
-    <div class="grid">
-      <a class="tile tile--feature" href="./pages/ai-text/">
-        <h3>AI 文本痕迹检测 <span class="badge badge--accent tag">主打</span></h3>
-        <p>扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格、同形异义字，还原隐藏载荷并一键清洗。</p>
-      </a>
-      <a class="tile" href="./pages/text/">
-        <h3>文本隐形水印</h3>
-        <p>三种字符级隐写方案的嵌入与提取，载荷先转 UTF-8，中文和 emoji 都能塞，字数完全不变。</p>
-      </a>
-    </div>
+    <section aria-labelledby="trend-title">
+      <div class="section-heading">
+        <div><span class="section-label">03 — What is changing</span><h2 id="trend-title">2026 年水印领域在发生什么。</h2></div>
+        <p>不可见水印和公开来源凭证正在组合使用：一层藏在内容本身，一层记录在文件结构里。</p>
+      </div>
+      <div class="card table-scroll">
+        <table>
+          <thead><tr><th>动向</th><th>具体是什么</th><th>本站对应</th></tr></thead>
+          <tbody>
+            <tr><td>文字进入水印时代</td><td>Claude 自 2026-08-02 起对文字输出嵌入 SynthID-Text 式统计水印，全局生效、无法关闭</td><td><a href="./pages/ai-text/">原理与边界对照</a></td></tr>
+            <tr><td>双层方案成为事实标准</td><td>不可见水印 + C2PA 签名清单，一层被抹掉还有另一层</td><td><a href="./pages/c2pa/">内容凭证读取器</a></td></tr>
+            <tr><td>覆盖到全模态</td><td>SynthID 已覆盖图像、音频、视频、文本；OpenAI 把音频也纳入水印与验证工具</td><td>—</td></tr>
+            <tr><td>监管是主要推力</td><td>欧盟 AI Act 第 50 条自 2026-08-02 起对新上线系统生效，要求生成内容带机器可读标记</td><td>—</td></tr>
+            <tr><td>检测接口还没开放</td><td>Anthropic 已宣布会提供文字水印检测 API，但截至目前仍不可调用，也没公布定价</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note" style="margin-top:16px">
+        <strong>关于 Claude 的文字水印，先澄清一个误会。</strong>
+        它不是往输出里塞零宽字符或者奇怪空格，而是 SynthID-Text 那一路：生成时按密钥对候选 token 做统计偏置。
+        所以搜索不可见字符既证明不了、也排除不了它。<a href="./pages/ai-text/">检测器页面有完整对照</a>。
+      </div>
+    </section>
 
-    <h2>图片与文件</h2>
-    <div class="grid">
-      <a class="tile tile--feature" href="./pages/c2pa/">
-        <h3>C2PA 内容凭证读取器 <span class="badge badge--accent tag">新增</span></h3>
-        <p>读出图片里那份带签名的清单：谁生成的、是否声明为 AI 生成、经过哪些编辑、用了哪些素材。</p>
-      </a>
-      <a class="tile" href="./pages/according/">
-        <h3>明水印 & 全屏无痕水印</h3>
-        <p>Canvas 叠字，配合 1% 不透明度的多色文字层——肉眼几乎看不见，拉一下色阶就现形。</p>
-      </a>
-      <a class="tile" href="./pages/exif/">
-        <h3>EXIF 元信息</h3>
-        <p>最容易被忽略的「水印」：拍照设备、时间、GPS 经纬度，直接从文件头里读出来，也能一键清掉。</p>
-      </a>
-      <a class="tile" href="./pages/lsb-order/">
-        <h3>LSB 隐写 · 顺序编码</h3>
-        <p>把水印文本按位写进 RGB 最低有效位，带 8 bit 长度头，逐位读回。</p>
-      </a>
-      <a class="tile" href="./pages/lsb-img/">
-        <h3>LSB 隐写 · 图形通道</h3>
-        <p>把一整张文字图当作水印写进目标通道最低位，解码时直接把该位放大成黑白图。</p>
-      </a>
-      <a class="tile" href="./pages/lsb-encryption/">
-        <h3>LSB 隐写 · 口令加密</h3>
-        <p>写入前先用 SJCL 做 AES 加密，没有口令就算知道算法也读不出内容。</p>
-      </a>
-      <a class="tile" href="./pages/fft/">
-        <h3>频域盲水印（FFT）</h3>
-        <p>把水印叠加到傅里叶频谱上，抗裁剪、抗压缩、抗截屏，是真正能扛住二次传播的那种。</p>
-      </a>
-    </div>
+    <section id="tools" aria-labelledby="tools-title">
+      <div class="section-heading">
+        <div><span class="section-label">04 — Open laboratory</span><h2 id="tools-title">选择一个实验工具。</h2></div>
+        <p>所有 Demo 都直接在浏览器运行。先看“适用场景”和“抗破坏能力”，不要只看它是否隐形。</p>
+      </div>
+      <div class="tool-cluster">
+        <a class="tile tile--feature" href="./pages/ai-text/"><h3>AI 文本痕迹检测 <span class="badge badge--accent">主打</span></h3><p>扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格和同形异义字。</p><div class="tool-meta"><span>TEXT</span><span>DETECT</span><span>CLEAN</span></div></a>
+        <a class="tile tile--feature" href="./pages/c2pa/"><h3>C2PA 内容凭证读取器</h3><p>读出谁生成、是否声明为 AI、经过哪些编辑、用了哪些素材，以及数字签名是否存在。</p><div class="tool-meta"><span>FILE</span><span>PROVENANCE</span><span>VERIFY</span></div></a>
+        <a class="tile" href="./pages/text/"><h3>文本隐形水印</h3><p>三种字符级隐写方案，支持中文和 emoji，可嵌入、提取和清洗。</p><div class="tool-meta"><span>UNICODE</span><span>LOW ROBUSTNESS</span></div></a>
+        <a class="tile" href="./pages/according/"><h3>明水印 & 全屏无痕水印</h3><p>Canvas 叠字与 1% 不透明度多色文字层，拉一下色阶即可显影。</p><div class="tool-meta"><span>CANVAS</span><span>SCREENSHOT</span></div></a>
+        <a class="tile" href="./pages/exif/"><h3>EXIF 元信息</h3><p>读取设备、时间和 GPS 经纬度，也可导出一份不含元信息的副本。</p><div class="tool-meta"><span>METADATA</span><span>PRIVACY</span></div></a>
+        <a class="tile" href="./pages/lsb-order/"><h3>LSB · 顺序编码</h3><p>把水印文本按位写入 RGB 最低有效位，带长度头并逐位读回。</p><div class="tool-meta"><span>PIXEL</span><span>PNG ONLY</span></div></a>
+        <a class="tile" href="./pages/lsb-img/"><h3>LSB · 图形通道</h3><p>把文字图写进目标通道最低位，解码时直接显影为黑白图。</p><div class="tool-meta"><span>BIT PLANE</span><span>VISIBLE OUTPUT</span></div></a>
+        <a class="tile" href="./pages/lsb-encryption/"><h3>LSB · 口令加密</h3><p>写入前先用 SJCL 做 AES 加密，没有口令就无法读出载荷。</p><div class="tool-meta"><span>AES</span><span>ENCRYPTED</span></div></a>
+        <a class="tile tile--feature" href="./pages/fft/"><h3>频域盲水印（FFT）</h3><p>把水印叠加到傅里叶频谱，面对裁剪、压缩和截屏时更有韧性。</p><div class="tool-meta"><span>FREQUENCY</span><span>HIGH ROBUSTNESS</span></div></a>
+      </div>
+    </section>
 
-    <h2>怎么选</h2>
-    <div class="table-scroll card">
-      <table>
-        <thead>
-          <tr><th>方案</th><th>载体</th><th>隐蔽性</th><th>鲁棒性</th><th>典型场景</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>明水印</td><td>图片</td><td>无</td><td>中</td><td>版权声明、防直接盗图</td></tr>
-          <tr><td>全屏无痕水印</td><td>截图</td><td>高</td><td>低</td><td>后台页面防截图外传</td></tr>
-          <tr><td>EXIF</td><td>图片文件</td><td>低</td><td>极低</td><td>取证；也是最容易泄露隐私的地方</td></tr>
-          <tr><td>C2PA 内容凭证</td><td>文件元数据</td><td>低（可公开验证）</td><td>低</td><td>标注来源与 AI 生成声明，重新编码即丢失</td></tr>
-          <tr><td>LSB 隐写</td><td>无损图片</td><td>高</td><td>低</td><td>原图分发溯源，一压缩就没</td></tr>
-          <tr><td>频域水印</td><td>图片</td><td>高</td><td>高</td><td>要经得起转发、压缩、截屏的场景</td></tr>
-          <tr><td>字符级文本隐写</td><td>文本</td><td>高</td><td>低</td><td>定向分发溯源，查谁泄的稿</td></tr>
-          <tr><td>统计式文本水印</td><td>文本</td><td>极高</td><td>中</td><td>标注 AI 生成内容，需模型侧配合</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <section aria-labelledby="compare-title">
+      <div class="section-heading"><div><span class="section-label">05 — Decision matrix</span><h2 id="compare-title">怎么选，不看噱头看传播路径。</h2></div><p>原图分发、平台转发、截图外传和 AI 合规标记需要的不是同一种水印。</p></div>
+      <div class="card table-scroll comparison-card">
+        <table>
+          <thead><tr><th>方案</th><th>载体</th><th>隐蔽性</th><th>鲁棒性</th><th>典型场景</th></tr></thead>
+          <tbody>
+            <tr><td>明水印</td><td>图片</td><td>无</td><td>中</td><td>版权声明、防直接盗图</td></tr>
+            <tr><td>全屏无痕水印</td><td>截图</td><td>高</td><td>低</td><td>后台页面防截图外传</td></tr>
+            <tr><td>EXIF</td><td>图片文件</td><td>低</td><td>极低</td><td>取证与隐私检查</td></tr>
+            <tr><td>C2PA 内容凭证</td><td>文件元数据</td><td>低（公开验证）</td><td>低</td><td>标注来源与 AI 生成声明</td></tr>
+            <tr><td>LSB 隐写</td><td>无损图片</td><td>高</td><td>低</td><td>原图分发溯源</td></tr>
+            <tr><td>频域水印</td><td>图片</td><td>高</td><td>高</td><td>转发、压缩、截屏后的溯源</td></tr>
+            <tr><td>字符级文本隐写</td><td>文本</td><td>高</td><td>低</td><td>定向分发与泄密溯源</td></tr>
+            <tr><td>统计式文本水印</td><td>文本</td><td>极高</td><td>中</td><td>标注 AI 生成内容，需模型侧配合</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <div class="note" style="margin-top:24px">
-      <strong>提醒：</strong>LSB 类水印只在无损格式下成立。导出务必用 PNG，存成 JPEG 或者被平台二次压缩之后，最低有效位会被直接抹掉。
-    </div>
+    <section class="privacy-panel" aria-labelledby="privacy-title">
+      <div><span class="section-label">06 — Local first</span><h2 id="privacy-title">你的文件，不经过服务器。</h2><p>读取、绘制、嵌入、提取和导出都由浏览器本地完成。关闭页面，输入数据随页面状态一起消失。</p></div>
+      <div class="privacy-proof"><div><b>0</b><span>文件上传请求</span></div><div><b>9</b><span>纯前端实验工具</span></div><div><b>∞</b><span>本地重复使用</span></div></div>
+    </section>
 
-    <h2>常见问题</h2>
-    <div class="card">
-      <h3 style="margin-top:0">Claude 的文字水印是零宽字符吗？</h3>
-      <p>不是。Claude 采用的是 SynthID-Text 一类的统计式水印，在生成每个 token 时按密钥对候选词做概率偏置，码位完全正常。搜索零宽字符既证明不了也排除不了它。</p>
-
-      <h3>怎么检测文本里的不可见字符？</h3>
-      <p>把文本粘贴到 <a href="./pages/ai-text/">AI 文本痕迹检测</a>，即可扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，并还原隐藏载荷、一键清洗。</p>
-
-      <h3>C2PA 内容凭证是什么？怎么查看？</h3>
-      <p>C2PA Content Credentials 是一段带数字签名的清单，写明内容由谁生成、是否为 AI 生成、经过哪些编辑。把图片拖进 <a href="./pages/c2pa/">内容凭证读取器</a> 即可读出：JPEG 存在 APP11 段、PNG 存在 caBX 块、WebP 存在 C2PA 块。</p>
-
-      <h3>图片水印哪种最扛得住转发和压缩？</h3>
-      <p>频域盲水印。LSB 隐写只在无损格式下成立，一旦被存成 JPEG 或平台二次压缩，最低有效位会被直接抹掉；<a href="./pages/fft/">频域水印</a>把信息摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。</p>
-    </div>
+    <section aria-labelledby="faq-title">
+      <div class="section-heading"><div><span class="section-label">07 — FAQ</span><h2 id="faq-title">常见问题。</h2></div><p>先排除最常见的误解，再决定要检测字符、像素、频率还是文件来源。</p></div>
+      <div class="faq-list">
+        <article class="faq-item"><span>01</span><div><h3>Claude 的文字水印是零宽字符吗？</h3><p>不是。Claude 采用的是 SynthID-Text 一类的统计式水印，在生成每个 token 时按密钥对候选词做概率偏置，码位完全正常。搜索零宽字符既证明不了也排除不了它。</p></div></article>
+        <article class="faq-item"><span>02</span><div><h3>怎么检测文本里的不可见字符？</h3><p>把文本粘贴到 <a href="./pages/ai-text/">AI 文本痕迹检测</a>，即可扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，并还原隐藏载荷、一键清洗。</p></div></article>
+        <article class="faq-item"><span>03</span><div><h3>C2PA 内容凭证是什么？怎么查看？</h3><p>C2PA Content Credentials 是一段带数字签名的清单，写明内容由谁生成、是否为 AI 生成、经过哪些编辑。把图片拖进 <a href="./pages/c2pa/">内容凭证读取器</a> 即可读取。</p></div></article>
+        <article class="faq-item"><span>04</span><div><h3>图片水印哪种最扛得住转发和压缩？</h3><p>频域盲水印。LSB 一旦被存成 JPEG 或平台二次压缩，最低有效位会被改写；<a href="./pages/fft/">频域水印</a>把信息摊在全图频率成分里，更能抵抗裁剪、缩放、压缩和截屏。</p></div></article>
+      </div>
+    </section>
 
     <footer class="site">
       <nav class="site-nav" aria-label="全部工具"><a href="./pages/ai-text/">AI 文本痕迹检测</a><a href="./pages/c2pa/">C2PA 内容凭证读取器</a><a href="./pages/text/">文本隐形水印</a><a href="./pages/according/">明水印与全屏无痕水印</a><a href="./pages/exif/">EXIF 元信息</a><a href="./pages/lsb-order/">LSB 顺序编码</a><a href="./pages/lsb-img/">LSB 图形通道</a><a href="./pages/lsb-encryption/">LSB 口令加密</a><a href="./pages/fft/">频域盲水印</a></nav>
-      
-      所有 Demo 都在浏览器本地运行，图片和文本不会上传到任何服务器 ·
-      <a href="https://github.com/unStone/digital-watermarking" target="_blank" rel="noopener">unStone/digital-watermarking</a>
+      所有 Demo 都在浏览器本地运行，图片和文本不会上传 · <a href="https://github.com/unStone/digital-watermarking" target="_blank" rel="noopener">unStone/digital-watermarking</a>
     </footer>
   </main>
 
   <script src="assets/ui.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', () => UI.mountTopbar(''));</script>
 <!-- ld:start -->
 <script type="application/ld+json">
 {
@@ -192,34 +266,22 @@
     {
      "@type": "Question",
      "name": "Claude 的文字水印是零宽字符吗？",
-     "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "不是。Claude 采用的是 SynthID-Text 一类的统计式水印，在生成每个 token 时按密钥对候选词做概率偏置，码位完全正常。搜索零宽字符既证明不了也排除不了它。"
-     }
+     "acceptedAnswer": { "@type": "Answer", "text": "不是。Claude 采用的是 SynthID-Text 一类的统计式水印，在生成每个 token 时按密钥对候选词做概率偏置，码位完全正常。搜索零宽字符既证明不了也排除不了它。" }
     },
     {
      "@type": "Question",
      "name": "怎么检测文本里的不可见字符？",
-     "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "把文本粘贴到本站的 AI 文本痕迹检测页面，即可扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，并还原隐藏载荷、一键清洗。"
-     }
+     "acceptedAnswer": { "@type": "Answer", "text": "把文本粘贴到本站的 AI 文本痕迹检测页面，即可扫描零宽字符、变体选择符、Unicode Tag、双向控制符、异常空格与同形异义字，并还原隐藏载荷、一键清洗。" }
     },
     {
      "@type": "Question",
      "name": "C2PA 内容凭证是什么？怎么查看？",
-     "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "C2PA Content Credentials 是一段带数字签名的清单，写明内容由谁生成、是否为 AI 生成、经过哪些编辑。把图片拖进本站的内容凭证读取器即可读出，JPEG 存在 APP11 段、PNG 存在 caBX 块、WebP 存在 C2PA 块。"
-     }
+     "acceptedAnswer": { "@type": "Answer", "text": "C2PA Content Credentials 是一段带数字签名的清单，写明内容由谁生成、是否为 AI 生成、经过哪些编辑。把图片拖进本站的内容凭证读取器即可读出，JPEG 存在 APP11 段、PNG 存在 caBX 块、WebP 存在 C2PA 块。" }
     },
     {
      "@type": "Question",
      "name": "图片水印哪种最扛得住转发和压缩？",
-     "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "频域盲水印。LSB 隐写只在无损格式下成立，一旦被存成 JPEG 或平台二次压缩，最低有效位会被直接抹掉；频域水印把信息摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。"
-     }
+     "acceptedAnswer": { "@type": "Answer", "text": "频域盲水印。LSB 隐写只在无损格式下成立，一旦被存成 JPEG 或平台二次压缩，最低有效位会被直接抹掉；频域水印把信息摊在全图频率成分里，裁剪、缩放、压缩甚至截屏都很难抹干净。" }
     }
    ]
   },
@@ -233,11 +295,7 @@
    "applicationCategory": "UtilitiesApplication",
    "operatingSystem": "Any (Web Browser)",
    "isAccessibleForFree": true,
-   "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "CNY"
-   }
+   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" }
   }
  ]
 }

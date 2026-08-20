@@ -28,13 +28,15 @@
   <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 <!-- seo:end -->
   <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="stylesheet" href="../../assets/layout.css">
+  <link rel="stylesheet" href="../../assets/signals.css">
   <link rel="stylesheet" href="index.css">
 </head>
-<body>
+<body class="tool-page">
   <header class="topbar"><a class="brand" href="../../">数字水印实验室</a><span class="spacer"></span><nav><a href="../../pages/c2pa/">内容凭证</a><a href="../../pages/ai-text/" style="color:var(--accent)">AI 文本检测</a><a href="../../pages/text/">文本水印</a><a href="../../pages/according/">图片水印</a><a href="../../pages/fft/">频域水印</a></nav></header>
 
   <main class="wrap wrap--wide">
-    <div class="page-head">
+    <div class="page-head" data-section="01 — Text forensics">
       <span class="badge badge--accent">主打</span>
       <h1>AI 文本痕迹检测</h1>
       <p>
@@ -116,6 +118,13 @@
         </tbody>
       </table>
     </div>
+
+    <section class="principle-brief signal-grid" aria-labelledby="principle-title">
+      <h2 id="principle-title">原理速览：检测额外码位，不判断文风</h2>
+      <p>本页逐字符读取 Unicode 码位，把不可见载荷、方向控制和跨字母表伪装暴露出来。统计式水印的码位完全正常，必须由持密钥方检测。</p>
+      <ol class="signal-steps"><li><b>读取</b><span>遍历真实码位</span></li><li><b>分类</b><span>识别六类风险</span></li><li><b>还原</b><span>尝试解出载荷</span></li><li><b>清洗</b><span>删除或标准化</span></li></ol>
+      <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../text/">嵌入字符级水印</a><a class="btn" href="../c2pa/">读取文件来源凭证</a></div></nav>
+    </section>
 
     <footer class="site">
       <nav class="site-nav" aria-label="全部工具"><a href="../../pages/ai-text/">AI 文本痕迹检测</a><a href="../../pages/c2pa/">C2PA 内容凭证读取器</a><a href="../../pages/text/">文本隐形水印</a><a href="../../pages/according/">明水印与全屏无痕水印</a><a href="../../pages/exif/">EXIF 元信息</a><a href="../../pages/lsb-order/">LSB 顺序编码</a><a href="../../pages/lsb-img/">LSB 图形通道</a><a href="../../pages/lsb-encryption/">LSB 口令加密</a><a href="../../pages/fft/">频域盲水印</a></nav>

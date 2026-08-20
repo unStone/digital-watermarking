@@ -1,81 +1,73 @@
-/* 把 PixelJihad 原有的类名映射到全站设计系统上，index.js 不用改 */
-body { text-align: left; }
-
-h1 {
-  max-width: 640px;
-  margin: 40px auto 8px;
-  padding: 0 20px;
-  font-size: 28px;
-  letter-spacing: -.02em;
-}
-
+/* PixelJihad 的既有 ID 保持不变，只重做页面外壳。 */
 .section {
-  max-width: 640px;
-  margin: 0 auto 16px;
-  padding: 20px;
+  margin: 16px 0 0;
+  padding: 22px;
   overflow: auto;
-}
-
-.section.dark {
-  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-}
-
-#about {
-  color: var(--text-soft);
-  font-size: 14px;
-  padding-top: 0;
-  padding-bottom: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .step {
-  font-size: 13px;
+  margin: 0 0 15px;
   color: var(--text-soft);
-  margin-bottom: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .1em;
+  text-transform: uppercase;
 }
 
-.sectionbody { margin-top: 0; }
-
+.sectionbody { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+#main .sectionbody, #reveal .sectionbody { display: block; }
 .left, .right { width: 100%; float: none; }
-.right { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
-
-@media (min-width: 720px) {
-  .left  { width: 48%; float: left; }
-  .right { width: 48%; float: right; margin-top: 0; padding-top: 0; border-top: 0; }
-}
-
-.message { height: 120px; margin-bottom: 10px; }
-.password { margin-bottom: 10px; }
+.message { height: 132px; margin-bottom: 12px; }
+.password { margin-bottom: 12px; }
 
 .submit {
-  float: none;
-  display: inline-flex; align-items: center;
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 15px;
   border: 1px solid var(--accent);
+  border-radius: 999px;
   background: var(--accent);
   color: #fff;
-  font: inherit; font-size: 13.5px;
-  padding: 8px 14px;
-  border-radius: 8px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
   cursor: pointer;
 }
-.submit:hover { filter: brightness(1.06); }
+.submit:hover { filter: brightness(1.07); }
 
 .preview {
-  margin-top: 0; margin-bottom: 14px;
-  width: 120px; float: none;
-  border-radius: 8px; border: 1px solid var(--border);
+  display: block;
+  width: 150px;
+  height: auto;
+  margin: 0 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 #messageDecoded {
-  font-family: var(--mono); font-size: 13px;
-  white-space: pre-wrap; word-break: break-word;
-  background: var(--bg-soft); border: 1px solid var(--border);
-  border-radius: 8px; padding: 12px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  font-family: var(--mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-#output { max-width: 100%; height: auto; border-radius: 8px; }
+.output-section { padding: 0; border: 0; background: transparent; box-shadow: none; }
+#output { display: block; max-width: 100%; height: auto; border-radius: 12px; }
 #output:not([src]) { display: none; }
-#output[src] { box-shadow: var(--shadow); }
-
+#output[src] { border: 1px solid var(--border); box-shadow: var(--shadow-hi); }
 .hide { display: none; }
+
+@media (max-width: 700px) {
+  .sectionbody { grid-template-columns: 1fr; }
+}
