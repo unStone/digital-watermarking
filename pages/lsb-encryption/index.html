@@ -57,6 +57,10 @@
         <div class="left">
           <label for="message">要隐藏的内容</label>
           <textarea id="message" class="message" maxlength="1000" placeholder="最多 1000 个字符"></textarea>
+          <div class="meter" id="capacity">
+            <div class="meter-track"><div class="meter-fill" id="capacity-fill"></div></div>
+            <p class="meter-note" id="capacity-note"></p>
+          </div>
           <label for="password">写入口令（可选）</label>
           <input type="password" id="password" class="password" placeholder="留空则只做隐写，不加密">
           <button id="encode" class="submit">加密并写入</button>

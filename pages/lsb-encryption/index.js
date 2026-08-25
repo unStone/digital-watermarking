@@ -1,3 +1,45 @@
+// ---------------------------------------------------------------------------
+// 容量条：明文写多少、加密后载荷有多长、这张图装不装得下
+// ---------------------------------------------------------------------------
+
+var imagePixelCount = 0;
+
+// AES-GCM + base64 + JSON 包装以后的长度，不用真加密一遍也能估准
+var estimatePayloadLength = function(text, encrypted) {
+  if (!encrypted) return JSON.stringify({ text: text }).length;
+  var utf8 = new TextEncoder().encode(text).length;
+  var cipherB64 = Math.ceil((utf8 + 16) / 3) * 4;   // +16 是 GCM 的认证标签
+  return 68 + cipherB64;                            // JSON 外壳 + salt/iv 的 base64
+};
+
+var renderCapacity = function() {
+  var note = document.getElementById('capacity-note');
+  var fill = document.getElementById('capacity-fill');
+  var box = document.getElementById('capacity');
+  if (!note) return;
+
+  var text = document.getElementById('message').value;
+  var encrypted = document.getElementById('password').value.length > 0;
+  var payload = estimatePayloadLength(text, encrypted);
+  var parts = ['明文 ' + text.length + ' / ' + maxMessageSize + ' 字'];
+  if (encrypted) parts.push('加密后载荷约 ' + payload + ' 字符');
+
+  if (!imagePixelCount) {
+      box.classList.remove('meter--over');
+      fill.style.width = '0%';
+      note.textContent = parts.concat('选图后才知道装不装得下').join(' · ');
+      return;
+  }
+
+  // 每个载荷字符占 16 bit，可用位是 RGB 三个分量（跳过 alpha）
+  var limit = Math.min(maxPayloadSize, Math.floor((imagePixelCount * 3) / 16) - 1);
+  var over = text.length > maxMessageSize || payload > limit;
+  box.classList.toggle('meter--over', over);
+  fill.style.width = Math.min(100, (payload / limit) * 100).toFixed(1) + '%';
+  parts.push(over ? '超出这张图能装的 ' + limit + ' 字符' : '这张图能装 ' + limit + ' 字符');
+  note.textContent = parts.join(' · ');
+};
+
 // initialize
 window.onload = function() {
   // add action to the file input
@@ -11,6 +53,11 @@ window.onload = function() {
   // add action to the decode button
   var decodeButton = document.getElementById('decode');
   decodeButton.addEventListener('click', decode);
+
+  // 容量条跟着明文和口令实时变
+  document.getElementById('message').addEventListener('input', renderCapacity);
+  document.getElementById('password').addEventListener('input', renderCapacity);
+  renderCapacity();
 };
 
 // 明文长度上限，和 textarea 的 maxlength 对齐
@@ -143,6 +190,8 @@ var importImage = function(e) {
           ctx.canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
 
+          imagePixelCount = img.width * img.height;
+          renderCapacity();
           decode();
       };
       img.src = event.target.result;

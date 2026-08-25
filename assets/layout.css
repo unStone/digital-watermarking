@@ -98,7 +98,7 @@ body { min-width: 0; }
 .card > :last-child { margin-bottom: 0; }
 
 /* 容量条：载荷占了图片多少可用空间 */
-.meter { margin-top: 12px; }
+.meter { margin: 12px 0; }
 .meter-track {
   height: 6px;
   overflow: hidden;
