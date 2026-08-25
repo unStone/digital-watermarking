@@ -61,7 +61,7 @@ flowchart LR
 | [exif](pages/exif/) | EXIF 元信息 | 图片文件 | 低 | 极低 | 取证；也是最容易泄露隐私的地方 |
 | [lsb-order](pages/lsb-order/) | LSB · 顺序编码 | 无损图片 | 高 | 低 | 原图分发溯源 |
 | [lsb-img](pages/lsb-img/) | LSB · 图形通道 | 无损图片 | 高 | 低 | 水印直接「显影」，不需要解码格式 |
-| [lsb-encryption](pages/lsb-encryption/) | LSB · 口令加密 | 无损图片 | 高 | 低 | 带 AES 的隐写，第三方实现对照 |
+| [lsb-encryption](pages/lsb-encryption/) | LSB · 口令加密 | 无损图片 | 高 | 低 | 带 AES-GCM 的隐写，定位算法为第三方实现对照 |
 | [fft](pages/fft/) | 频域盲水印 | 图片 | 高 | **高** | 要扛住转发、压缩、截屏的场景 |
 
 > ⚠️ LSB 类水印只在无损格式下成立。导出必须用 PNG，一旦被存成 JPEG 或平台二次压缩，最低有效位会被直接抹掉。
