@@ -37,8 +37,14 @@
     toast(okMessage || '已复制');
   }
 
-  /** 把 canvas 存成 PNG（LSB 水印必须无损，切勿导出 JPEG） */
-  function downloadCanvas(canvas, filename) {
+  /**
+   * 把 canvas 存成图片，默认 PNG。
+   * 只有明水印那类「烧进像素」的场景才可以传 image/jpeg，
+   * LSB 系的水印必须无损，一压就没。
+   */
+  function downloadCanvas(canvas, filename, options) {
+    const type = (options && options.type) || 'image/png';
+    const quality = options && options.quality;
     canvas.toBlob((blob) => {
       if (!blob) return toast('导出失败');
       const url = URL.createObjectURL(blob);
@@ -47,7 +53,7 @@
       a.download = filename || 'watermarked.png';
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }, 'image/png');
+    }, type, quality);
   }
 
   global.UI = { $, $$, toast, copy, downloadCanvas };

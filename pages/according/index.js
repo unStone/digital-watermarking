@@ -6,21 +6,41 @@
 
 const GHOST_COLORS = ['#ffffff', '#000000', '#ff0000', '#0000ff', '#00ff00'];
 
+/** 文案变量：明水印真正的用途是「谁、什么时候、从哪张图拿的」 */
+function resolveVariables(text, context) {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const date = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+  const time = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  const vars = {
+    date: date,
+    time: time,
+    datetime: date + ' ' + time,
+    file: context.file || '',
+    size: context.width && context.height ? context.width + '×' + context.height : '',
+  };
+  return text.replace(/\{(date|time|datetime|file|size)\}/g, (whole, key) => vars[key] || '');
+}
+
 /** 斜向平铺地写一层文字 */
 function tileText(ctx, text, width, height, options) {
   const { fontSize, alpha, colors, stroke } = options;
+  const angle = isFinite(options.angle) ? options.angle : -20;
+  const spacing = options.spacing > 0 ? options.spacing : 3.2;
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.font = fontSize + 'px "PingFang SC", "Microsoft YaHei", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.translate(width / 2, height / 2);
-  ctx.rotate(-Math.PI / 9);
+  ctx.rotate((angle * Math.PI) / 180);
 
-  const stepY = fontSize * 3.2;
+  const stepY = fontSize * spacing;
   const stepX = Math.max(ctx.measureText(text).width + fontSize * 2, fontSize * 6);
-  const spanX = Math.ceil(width / stepX) + 2;
-  const spanY = Math.ceil(height / stepY) + 2;
+  // 旋转后要铺满的是对角线，不是宽高
+  const reach = Math.hypot(width, height);
+  const spanX = Math.ceil(reach / stepX) + 2;
+  const spanY = Math.ceil(reach / stepY) + 2;
 
   let n = 0;
   for (let row = -spanY; row <= spanY; row++) {
@@ -79,11 +99,18 @@ window.addEventListener('DOMContentLoaded', function () {
   const textInput = document.getElementById('text');
   const visible = document.getElementById('visible');
   const ghost = document.getElementById('ghost');
+  const scaleInput = document.getElementById('scale');
+  const angleInput = document.getElementById('angle');
+  const spacingInput = document.getElementById('spacing');
+  const formatSelect = document.getElementById('format');
+  const qualityInput = document.getElementById('quality');
+  const qualityField = document.getElementById('quality-field');
   const black = document.getElementById('black');
   const white = document.getElementById('white');
   const downloadBtn = document.getElementById('download');
 
   let currentImage = null;
+  let currentName = '';
   let autoFit = true;   // 换图后自动把色阶窗口对准背景，之后交给用户手调
 
   function renderReveal() {
@@ -96,6 +123,9 @@ window.addEventListener('DOMContentLoaded', function () {
   function render() {
     document.getElementById('visible-v').textContent = visible.value;
     document.getElementById('ghost-v').textContent = ghost.value;
+    document.getElementById('scale-v').textContent = scaleInput.value;
+    document.getElementById('angle-v').textContent = angleInput.value + '\u00b0';
+    document.getElementById('spacing-v').textContent = spacingInput.value;
     if (!currentImage) return;
 
     const { width, height, imgElement } = currentImage;
@@ -103,23 +133,24 @@ window.addEventListener('DOMContentLoaded', function () {
     canvas.height = height;
     ctx.drawImage(imgElement, 0, 0);
 
-    const text = textInput.value || ' ';
-    const fontSize = Math.max(14, Math.round(width / 22));
+    const text = resolveVariables(textInput.value, { file: currentName, width, height }) || ' ';
+    const fontSize = Math.max(10, Math.round((width / 22) * Number(scaleInput.value)));
+    const shape = { angle: Number(angleInput.value), spacing: Number(spacingInput.value) };
 
     // 明水印
-    tileText(ctx, text, width, height, {
+    tileText(ctx, text, width, height, Object.assign({
       fontSize,
       alpha: Number(visible.value),
       colors: ['#ffffff'],
       stroke: true,
-    });
+    }, shape));
     // 无痕水印：多色是为了在任何底色上都能被色阶拉出来
-    tileText(ctx, text, width, height, {
+    tileText(ctx, text, width, height, Object.assign({
       fontSize: Math.round(fontSize * 0.8),
       alpha: Number(ghost.value),
       colors: GHOST_COLORS,
       stroke: false,
-    });
+    }, shape));
 
     downloadBtn.disabled = false;
     if (autoFit) {
@@ -138,6 +169,7 @@ window.addEventListener('DOMContentLoaded', function () {
     getImageInfo(null, file, (err, data) => {
       if (err) return UI.toast(err.message);
       currentImage = data;
+      currentName = file.name.replace(/\.[^.]+$/, '');
       autoFit = true;
       render();
     });
@@ -146,8 +178,24 @@ window.addEventListener('DOMContentLoaded', function () {
   textInput.oninput = render;
   visible.oninput = render;
   ghost.oninput = render;
+  scaleInput.oninput = render;
+  angleInput.oninput = render;
+  spacingInput.oninput = render;
+
+  formatSelect.onchange = function () {
+    qualityField.style.display = this.value === 'image/jpeg' ? '' : 'none';
+  };
+  qualityInput.oninput = function () {
+    document.getElementById('quality-v').textContent = this.value;
+  };
   black.oninput = renderReveal;
   white.oninput = renderReveal;
 
-  downloadBtn.onclick = function () { UI.downloadCanvas(canvas, 'watermarked.png'); };
+  downloadBtn.onclick = function () {
+    const jpeg = formatSelect.value === 'image/jpeg';
+    UI.downloadCanvas(canvas, jpeg ? 'watermarked.jpg' : 'watermarked.png', {
+      type: formatSelect.value,
+      quality: jpeg ? Number(qualityInput.value) : undefined,
+    });
+  };
 });

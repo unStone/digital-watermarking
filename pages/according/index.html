@@ -49,6 +49,9 @@
         <div class="field">
           <label for="text">水印文字</label>
           <input type="text" id="text" value="仅供内部查阅 · uid 10086">
+          <p class="muted" style="margin:6px 0 0;font-size:13px">
+            可用变量：<code>{date}</code> <code>{time}</code> <code>{datetime}</code> <code>{file}</code> <code>{size}</code>
+          </p>
         </div>
         <div class="field">
           <label for="file">选择图片</label>
@@ -64,6 +67,33 @@
           <label for="ghost">无痕水印不透明度 <span id="ghost-v" class="cp">0.01</span></label>
           <input type="range" id="ghost" min="0.002" max="0.06" step="0.002" value="0.01">
         </div>
+      </div>
+      <div class="cols" style="margin-top:14px">
+        <div class="field">
+          <label for="scale">字号系数 <span id="scale-v" class="cp">1</span></label>
+          <input type="range" id="scale" min="0.4" max="3" step="0.1" value="1">
+        </div>
+        <div class="field">
+          <label for="angle">倾角 <span id="angle-v" class="cp">-20°</span></label>
+          <input type="range" id="angle" min="-60" max="60" step="1" value="-20">
+        </div>
+      </div>
+      <div class="cols" style="margin-top:14px">
+        <div class="field">
+          <label for="spacing">间距 <span id="spacing-v" class="cp">3.2</span></label>
+          <input type="range" id="spacing" min="1.5" max="6" step="0.1" value="3.2">
+        </div>
+        <div class="field">
+          <label for="format">导出格式</label>
+          <select id="format">
+            <option value="image/png">PNG — 无损，无痕水印不会掉</option>
+            <option value="image/jpeg">JPEG — 体积小，无痕水印可能被压没</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="quality-field" style="margin-top:14px;display:none">
+        <label for="quality">JPEG 质量 <span id="quality-v" class="cp">0.92</span></label>
+        <input type="range" id="quality" min="0.5" max="1" step="0.01" value="0.92">
       </div>
       <div class="btn-row" style="margin-top:16px">
         <button class="btn btn--primary" id="download" disabled>下载合成图</button>
