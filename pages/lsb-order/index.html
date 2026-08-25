@@ -39,7 +39,8 @@
       <h1>LSB 隐写 · 顺序编码</h1>
       <p>
         把水印文本按位写进每个像素 R/G/B 分量的最低有效位。像素值最多变化 1，肉眼完全看不出来。
-        数据格式是 8 bit 长度头加上每字符 16 bit 的 UTF-16 码元。
+        数据格式是 8 bit 长度头 + 每字符 16 bit 的 UTF-16 码元 + 16 bit CRC 校验。
+        填了口令，写入位置会被打散；写多份冗余，局部被涂掉还能表决恢复。
       </p>
     </div>
 
@@ -53,7 +54,21 @@
         <label for="waterMark">水印内容（最多 255 个字符）</label>
         <input type="text" id="waterMark" value="confidential-2026" placeholder="中英文都可以">
       </div>
-      <div class="field">
+      <div class="cols">
+        <div class="field">
+          <label for="password">口令（可选，决定写入位置的打散方式）</label>
+          <input type="text" id="password" placeholder="留空＝按顺序写，谁都能直接读出来">
+        </div>
+        <div class="field">
+          <label for="copies">冗余份数</label>
+          <select id="copies">
+            <option value="1">1 份 — 占用最小</option>
+            <option value="3">3 份 — 局部被涂改还能表决出来</option>
+            <option value="5">5 份 — 最抗涂改</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
         <label for="encodeInput">选择原图（建议 PNG）</label>
         <input type="file" id="encodeInput" accept="image/*">
       </div>
@@ -67,6 +82,10 @@
     <div class="card">
       <h2 style="margin-top:0">提取</h2>
       <div class="field">
+        <label for="decodePassword">口令（嵌入时填了就得填一样的）</label>
+        <input type="text" id="decodePassword" placeholder="留空＝按顺序读">
+      </div>
+      <div class="field" style="margin-top:14px">
         <label for="decodeInput">选择带水印的图片</label>
         <input type="file" id="decodeInput" accept="image/*">
       </div>
@@ -77,7 +96,7 @@
     <section class="principle-brief signal-grid" aria-labelledby="principle-title">
       <h2 id="principle-title">原理速览：只改每个颜色值的最后一位</h2>
       <p>一个 8 bit 颜色值的最低位只贡献 1/255 的亮度。顺序写入载荷时肉眼难辨，但 JPEG 量化会批量改写这些位。</p>
-      <ol class="signal-steps"><li><b>编码</b><span>生成长度头与位串</span></li><li><b>写入</b><span>替换 RGB 最低位</span></li><li><b>保存</b><span>导出无损 PNG</span></li><li><b>读取</b><span>按顺序恢复字符</span></li></ol>
+      <ol class="signal-steps"><li><b>编码</b><span>生成长度头与位串</span></li><li><b>写入</b><span>替换 RGB 最低位</span></li><li><b>保存</b><span>导出无损 PNG</span></li><li><b>读取</b><span>CRC 校验后恢复</span></li></ol>
       <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>在无损图片中嵌入并按顺序恢复短文本载荷。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能抵抗 JPEG、社交平台压缩、缩放或像素重绘。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-encryption/">给载荷增加口令</a><a class="btn" href="../fft/">对比频域水印</a></div></nav>
     </section>
