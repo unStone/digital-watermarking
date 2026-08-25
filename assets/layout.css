@@ -97,6 +97,25 @@ body { min-width: 0; }
 .card > :first-child { margin-top: 0; }
 .card > :last-child { margin-bottom: 0; }
 
+/* 容量条：载荷占了图片多少可用空间 */
+.meter { margin-top: 12px; }
+.meter-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-strong);
+}
+.meter-fill {
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width .18s;
+}
+.meter--over .meter-fill { background: var(--danger); }
+.meter-note { margin: 7px 0 0; color: var(--text-dim); font-size: 13px; }
+.meter--over .meter-note { color: var(--danger); }
+
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .cols > .field + .field { margin-top: 0; }

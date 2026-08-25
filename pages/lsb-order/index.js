@@ -163,11 +163,48 @@ window.addEventListener('DOMContentLoaded', function () {
   const encodeStat = document.getElementById('encodeStat');
   const downloadBtn = document.getElementById('download');
 
+  const capacityBox = document.getElementById('capacity');
+  const capacityFill = document.getElementById('capacity-fill');
+  const capacityNote = document.getElementById('capacity-note');
+
   const decodePassword = document.getElementById('decodePassword');
   const decodeInput = document.getElementById('decodeInput');
   const decodeCanvas = document.getElementById('decodeImageCanvas');
   const decodeCtx = decodeCanvas.getContext('2d', { willReadFrequently: true });
   const decodeText = document.getElementById('decodeText');
+
+  let lastCapacity = 0;
+
+  /** 载荷要占掉这张图多少可用位 */
+  function renderCapacity() {
+    const chars = Array.from(waterMark.value).length;
+    const bits = HEADER_BITS + chars * CHAR_BITS + CRC_BITS;
+    const copies = Number(copiesSelect.value);
+    // 第 n 份从 n*BLOCK_BITS 起算，占地按最后一份的尾巴算
+    const needed = (copies - 1) * BLOCK_BITS + bits;
+
+    if (!lastCapacity) {
+      capacityBox.classList.remove('meter--over');
+      capacityFill.style.width = '0%';
+      capacityNote.textContent = '载荷 ' + bits + ' bit × ' + copies + ' 份，选图后才知道占多少';
+      return;
+    }
+    const percent = (needed / lastCapacity) * 100;
+    const room = Math.floor((lastCapacity - (copies - 1) * BLOCK_BITS - HEADER_BITS - CRC_BITS) / CHAR_BITS);
+    const limit = Math.max(0, Math.min(MAX_CHARS, room));
+    const over = needed > lastCapacity || chars > limit;
+    capacityBox.classList.toggle('meter--over', over);
+    capacityFill.style.width = Math.min(100, percent).toFixed(1) + '%';
+    capacityNote.textContent = !over
+      ? '占用 ' + percent.toFixed(2) + '% · 这张图配 ' + copies + ' 份冗余最多能写 ' + limit + ' 个字'
+      : limit > 0
+        ? '装不下：' + copies + ' 份冗余在这张图上最多只能写 ' + limit + ' 个字'
+        : '这张图太小，放不下 ' + copies + ' 份冗余，减少份数或换张大图';
+  }
+
+  waterMark.oninput = renderCapacity;
+  copiesSelect.onchange = renderCapacity;
+  renderCapacity();
 
   encodeInput.onchange = function () {
     const file = this.files[0];
@@ -181,6 +218,8 @@ window.addEventListener('DOMContentLoaded', function () {
       const { width, height, imgElement } = data;
       const bits = buildBitString(text);
       const capacity = lsbCapacity(width * height);
+      lastCapacity = capacity;
+      renderCapacity();
       const copies = Number(copiesSelect.value);
       // 第 n 份从 n*BLOCK_BITS 起算，所以真正要够用的是最后一份的尾巴
       const needed = (copies - 1) * BLOCK_BITS + bits.length + CRC_BITS;
