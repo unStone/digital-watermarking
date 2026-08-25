@@ -45,9 +45,11 @@
     ].filter(([, v]) => v && /\S/.test(v));
 
     el.payloadCard.hidden = found.length === 0;
-    el.payloads.innerHTML = found.map(([src, v]) =>
-      '<div class="payload"><span class="src">来自 ' + src + '</span>' + escapeHtml(v) + '</div>'
-    ).join('');
+    el.payloads.innerHTML = found.map(([src, v]) => {
+      const r = I.verify(v);
+      return '<div class="payload"><span class="src">来自 ' + src +
+        (r.verified ? ' · 带校验位' : '') + '</span>' + escapeHtml(r.payload) + '</div>';
+    }).join('');
   }
 
   function renderGroups(report) {

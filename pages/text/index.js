@@ -39,7 +39,7 @@
       ['zerowidth', report.hidden.zerowidth],
       ['vs', report.hidden.vs],
       ['tag', report.hidden.tag],
-    ].filter(([, v]) => v && /\S/.test(v));
+    ].filter(([, v]) => v && /\S/.test(v)).map(([k, v]) => [k, I.verify(v)]);
 
     if (!hits.length) {
       box.innerHTML = report.invisibleCount
@@ -48,9 +48,13 @@
         : '没有检测到隐藏内容。';
       return;
     }
-    box.innerHTML = hits.map(([k, v]) =>
+    box.innerHTML = hits.map(([k, r]) =>
       '<div style="margin-bottom:8px"><span class="badge badge--accent">' + SCHEME_LABEL[k] + '</span> ' +
-      '<code>' + v.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) + '</code></div>'
+      '<code>' + r.payload.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) + '</code> ' +
+      (r.verified
+        ? '<span class="muted">· 校验通过</span>'
+        : '<span class="muted">· 未通过校验，内容可能被改动过，或来自旧版本 / 别的工具</span>') +
+      '</div>'
     ).join('');
   }
 

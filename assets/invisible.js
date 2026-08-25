@@ -92,6 +92,42 @@
   }
 
   /* ---------------------------------------------------------
+   * 载荷校验
+   * 在载荷前面挂 4 位十六进制的 CRC-16。解码时就能区分三件事：
+   * 没水印 / 水印被改坏了 / 旧版本生成的（没有校验位）
+   * ------------------------------------------------------- */
+  const CHECKSUM_LEN = 4;
+  const CHECKSUM_RE = /^[0-9a-f]{4}$/;
+
+  function crc16(text) {
+    let crc = 0xffff;
+    for (const b of enc.encode(text)) {
+      crc ^= b << 8;
+      for (let i = 0; i < 8; i++) {
+        crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xffff : (crc << 1) & 0xffff;
+      }
+    }
+    return crc.toString(16).padStart(CHECKSUM_LEN, '0');
+  }
+
+  function sign(payload) {
+    return crc16(payload) + payload;
+  }
+
+  /** 拆掉校验位。校验不过就原样返回并标记未校验——旧版本生成的水印没有这一段 */
+  function verify(raw) {
+    if (typeof raw !== 'string' || raw.length <= CHECKSUM_LEN) {
+      return { payload: raw || '', verified: false };
+    }
+    const head = raw.slice(0, CHECKSUM_LEN);
+    const body = raw.slice(CHECKSUM_LEN);
+    if (!CHECKSUM_RE.test(head) || crc16(body) !== head) {
+      return { payload: raw, verified: false };
+    }
+    return { payload: body, verified: true };
+  }
+
+  /* ---------------------------------------------------------
    * 嵌入 / 剥离
    * ------------------------------------------------------- */
   const EMBEDDERS = {
@@ -110,8 +146,13 @@
     const base = Array.from(strip(carrier));
     if (!base.length) throw new Error('载体文本不能为空');
     if (!payload) throw new Error('水印内容不能为空');
-    const mark = Array.from((EMBEDDERS[scheme] || encodeZeroWidth)(payload));
-    if (!mark.length) throw new Error('该方案无法编码这段水印（Unicode Tag 只支持可见 ASCII）');
+    const encode = EMBEDDERS[scheme] || encodeZeroWidth;
+    // Unicode Tag 会静默丢掉编不了的字符，先拦下来，别让人以为写进去了
+    if (scheme === 'tag' && Array.from(encode(payload)).length !== Array.from(payload).length) {
+      throw new Error('Unicode Tag 只支持可见 ASCII，这段水印里有它编不了的字符');
+    }
+    const mark = Array.from(encode(sign(payload)));
+    if (!mark.length) throw new Error('该方案无法编码这段水印');
 
     if (mode !== 'spread' || base.length < 2) {
       return base[0] + mark.join('') + base.slice(1).join('');
@@ -332,6 +373,6 @@
     encodeZeroWidth, decodeZeroWidth,
     encodeVariationSelector, decodeVariationSelector,
     encodeUnicodeTag, decodeUnicodeTag,
-    embed, strip, scan, describe, tokenize,
+    embed, strip, scan, describe, tokenize, verify,
   };
 })(window);
