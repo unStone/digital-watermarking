@@ -60,6 +60,28 @@
           <input type="range" id="fontSize" min="0.5" max="3" step="0.1" value="1.1">
         </div>
       </div>
+      <div class="cols" style="margin-top:14px">
+        <div class="field">
+          <label for="mode">嵌入方式</label>
+          <select id="mode">
+            <option value="notch">挖空：把频点压到 0，最隐蔽</option>
+            <option value="boost">加强：放大频点，抗压缩，平坦处可能有纹理</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="strength">强度 <span id="strength-v" class="cp">1</span></label>
+          <input type="range" id="strength" min="0.2" max="1" step="0.05" value="1">
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label for="channel">载体通道（嵌入和提取要用同一个；旧版本生成的图选「红」）</label>
+        <select id="channel">
+          <option value="y">亮度 Y — 唯一扛得住 JPEG 的选择</option>
+          <option value="2">蓝 — 伪影最轻，但一压缩就没</option>
+          <option value="1">绿</option>
+          <option value="0">红</option>
+        </select>
+      </div>
       <div class="field" style="margin-top:14px">
         <label for="encodeInput">选择原图</label>
         <input type="file" id="encodeInput" accept="image/*">

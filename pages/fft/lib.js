@@ -27,12 +27,50 @@ function shiftDFT(cv, mag) {
     q3.delete()
 }
 
-function getBlueChannel(cv, image)
+/**
+ * 取出承载水印的单通道平面，并带上写回的方法。
+ * 'y' = 亮度：JPEG 会对色度做 4:2:0 抽样，水印放在任何单个 RGB 通道上都会被
+ * 连带砍掉，放在 Y 上才扛得住压缩。'0'/'1'/'2' = 红/绿/蓝，用来读旧图。
+ */
+function openCarrier(cv, image, channel)
 {
-    let nextImg = image;
-    let channel = new cv.MatVector();
-    cv.split(nextImg, channel);
-    return channel.get(0);
+    if (channel === 'y' || channel == null) {
+        const rgb = new cv.Mat();
+        cv.cvtColor(image, rgb, cv.COLOR_RGBA2RGB);
+        const ycc = new cv.Mat();
+        cv.cvtColor(rgb, ycc, cv.COLOR_RGB2YCrCb);
+        const planes = new cv.MatVector();
+        cv.split(ycc, planes);
+        const plane = planes.get(0).clone();
+        return {
+            plane: plane,
+            restore: function (updated) {
+                planes.set(0, updated);
+                const merged = new cv.Mat();
+                cv.merge(planes, merged);
+                const out = new cv.Mat();
+                cv.cvtColor(merged, out, cv.COLOR_YCrCb2RGB);
+                merged.delete();
+                return out;
+            },
+            release: function () { rgb.delete(); ycc.delete(); planes.delete(); plane.delete(); },
+        };
+    }
+
+    const index = Number(channel);
+    const planes = new cv.MatVector();
+    cv.split(image, planes);
+    const plane = planes.get(index).clone();
+    return {
+        plane: plane,
+        restore: function (updated) {
+            planes.set(index, updated);
+            const out = new cv.Mat();
+            cv.merge(planes, out);
+            return out;
+        },
+        release: function () { planes.delete(); plane.delete(); },
+    };
 }
 
 function getDftMat(cv, padded)
@@ -95,19 +133,27 @@ async function buildWatermarkMask(width, height, text, fontScale) {
     return mctx.getImageData(0, 0, width, height);
 }
 
-/** 蒙版命中的像素，实部虚部一起写 0——等价于原来的 putText(Scalar.all(0)) */
-function stampMaskOnMat(comImg, mask) {
+/**
+ * 蒙版命中的频点按倍数缩放，实部虚部同乘一个实数——相位不动，共轭对称也就不会破。
+ * 挖空 notch：factor = 1 - 强度，强度 1 就是压到 0（老版本的行为）
+ * 加强 boost：factor = 增益，把该频点放大，JPEG 量化更难抹掉
+ */
+function stampMaskOnMat(comImg, mask, options) {
     if (!mask) return;
     const total = comImg.rows * comImg.cols;
     if (mask.data.length !== total * 4) {
         throw new Error('水印蒙版尺寸和图像不一致');
     }
+    const mode = (options && options.mode) || 'notch';
+    const strength = options && isFinite(options.strength) ? Number(options.strength) : 1;
+    const factor = mode === 'boost' ? Math.max(1, strength) : Math.max(0, 1 - strength);
+
     const alpha = mask.data;
     const out = comImg.data32F;
     for (let i = 0; i < total; i++) {
         if (alpha[i * 4 + 3] > 128) {
-            out[i * 2] = 0;
-            out[i * 2 + 1] = 0;
+            out[i * 2] *= factor;
+            out[i * 2 + 1] *= factor;
         }
     }
 }
@@ -180,34 +226,30 @@ function loadSubsetFont(chars) {
     return task;
 }
 
-function transFormMatWithText(cv, srcImg, mask) {
-    let padded = getBlueChannel(cv, srcImg);
+function transFormMatWithText(cv, srcImg, mask, options) {
+    const carrier = openCarrier(cv, srcImg, options && options.channel);
+    let padded = carrier.plane;
     padded.convertTo(padded, cv.CV_32F);
     let comImg = getDftMat(cv, padded);
     // add text
-    stampMaskOnMat(comImg, mask);
+    stampMaskOnMat(comImg, mask, options);
     //back image
     let invDFT = new cv.Mat();
     cv.idft(comImg, invDFT, cv.DFT_SCALE | cv.DFT_REAL_OUTPUT, 0);
     let restoredImage = new cv.Mat();
     invDFT.convertTo(restoredImage, cv.CV_8U);
-    let backPlanes = new cv.MatVector();
-    cv.split(srcImg, backPlanes);
-    // backPlanes.erase(backPlanes.get(0));
-    // backPlanes.insert(backPlanes.get(0), restoredImage);
-    backPlanes.set(0,restoredImage)
-    let backImage = new cv.Mat();
-    cv.merge(backPlanes,backImage);
+    let backImage = carrier.restore(restoredImage);
 
-    padded.delete();
     comImg.delete();
     invDFT.delete();
-    restoredImage.delete()
+    restoredImage.delete();
+    carrier.release();
     return backImage;
 }
 
-function getTextFormMat(cv, backImage) {
-    let padded= getBlueChannel(cv, backImage);
+function getTextFormMat(cv, backImage, channel) {
+    const carrier = openCarrier(cv, backImage, channel);
+    let padded = carrier.plane;
     padded.convertTo(padded, cv.CV_32F);
     let comImg = getDftMat(cv, padded);
     let backPlanes = new cv.MatVector();
@@ -224,9 +266,9 @@ function getTextFormMat(cv, backImage) {
     mag.convertTo(mag, cv.CV_8UC1);
     cv.normalize(mag, mag, 0, 255, cv.NORM_MINMAX, cv.CV_8UC1);
 
-    padded.delete();
     comImg.delete();
     matOne.delete();
+    carrier.release();
     return mag;    
 }
 
@@ -245,7 +287,7 @@ function init() {
   }
 }
 
-async function transformImageWithText(imgageElement,watermarkText,fontSize) {
+async function transformImageWithText(imgageElement,watermarkText,fontSize,options) {
   init()
   if((typeof watermarkText)!='string') {
     throw new Error('waterMarkText must be string')
@@ -256,17 +298,17 @@ async function transformImageWithText(imgageElement,watermarkText,fontSize) {
   let srcImg = cv.imread(imgageElement);
   if (srcImg.empty()){throw new Error("read image failed");}
   const mask = await buildWatermarkMask(srcImg.cols, srcImg.rows, watermarkText, fontSize);
-  let comImg = transFormMatWithText(cv, srcImg, mask);
+  let comImg = transFormMatWithText(cv, srcImg, mask, options);
   const canvasElement = matToCanvas(cv, comImg)
   srcImg.delete();
   comImg.delete();
   return canvasElement
 }
 
-async function getTextFormImage(imgageElement) {
+async function getTextFormImage(imgageElement, channel) {
     init()
     let comImg = cv.imread(imgageElement);
-    let backImage = getTextFormMat(cv, comImg);
+    let backImage = getTextFormMat(cv, comImg, channel);
     const canvasElement = matToCanvas(cv, backImage)
     comImg.delete();
     backImage.delete();

@@ -54,6 +54,9 @@ window.addEventListener('DOMContentLoaded', function () {
 
   const waterMark = document.getElementById('waterMark');
   const fontSizeInput = document.getElementById('fontSize');
+  const modeSelect = document.getElementById('mode');
+  const strengthInput = document.getElementById('strength');
+  const channelSelect = document.getElementById('channel');
   const encodeInput = document.getElementById('encodeInput');
   const encodeProcess = document.getElementById('encodeProcess');
   const encodeInputImg = document.getElementById('encodeInputImg');
@@ -71,6 +74,34 @@ window.addEventListener('DOMContentLoaded', function () {
     document.getElementById('fontSize-v').textContent = this.value;
   };
 
+  // 两种嵌入方式的强度不是一个量纲：挖空是深度 0-1，加强是增益倍数
+  const STRENGTH_RANGE = {
+    notch: { min: 0.2, max: 1, step: 0.05, value: 1 },
+    boost: { min: 2, max: 12, step: 0.5, value: 4 },
+  };
+
+  function syncStrength() {
+    const range = STRENGTH_RANGE[modeSelect.value];
+    strengthInput.min = range.min;
+    strengthInput.max = range.max;
+    strengthInput.step = range.step;
+    strengthInput.value = range.value;
+    document.getElementById('strength-v').textContent = range.value;
+  }
+
+  modeSelect.onchange = syncStrength;
+  strengthInput.oninput = function () {
+    document.getElementById('strength-v').textContent = this.value;
+  };
+
+  function embedOptions() {
+    return {
+      mode: modeSelect.value,
+      strength: Number(strengthInput.value),
+      channel: channelSelect.value,
+    };
+  }
+
   encodeInput.onchange = async function () {
     const file = this.files[0];
     if (!file) return;
@@ -79,7 +110,7 @@ window.addEventListener('DOMContentLoaded', function () {
       encodeProcess.textContent = '正在做傅里叶变换…';
       showImage(encodeInputImg, file);
       const img = await fileToImageElement(file);
-      encodedCanvas = await transformImageWithText(img, waterMark.value, Number(fontSizeInput.value));
+      encodedCanvas = await transformImageWithText(img, waterMark.value, Number(fontSizeInput.value), embedOptions());
       showCanvas(encodeImg, encodedCanvas);
       downloadEncode.disabled = false;
       encodeProcess.textContent = '完成，记得存 PNG';
@@ -100,7 +131,7 @@ window.addEventListener('DOMContentLoaded', function () {
       decodeProcess.textContent = '正在解析频谱…';
       showImage(decodeInputImg, file);
       const img = await fileToImageElement(file);
-      showCanvas(decodeImg, await getTextFormImage(img));
+      showCanvas(decodeImg, await getTextFormImage(img, channelSelect.value));
       decodeProcess.textContent = '完成';
     } catch (err) {
       decodeProcess.textContent = err.message;
