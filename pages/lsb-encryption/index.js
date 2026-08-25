@@ -13,8 +13,112 @@ window.onload = function() {
   decodeButton.addEventListener('click', decode);
 };
 
-// artificially limit the message size
+// 明文长度上限，和 textarea 的 maxlength 对齐
 var maxMessageSize = 1000;
+// 图里允许出现的载荷长度上限。密文是 base64 + JSON，比明文长不少，
+// 这个值卡在明文上限上会让「加密 + 长文本」直接写不进去
+var maxPayloadSize = 4000;
+
+// ---------------------------------------------------------------------------
+// 加解密：浏览器原生 WebCrypto（PBKDF2 + AES-GCM）
+// GCM 自带认证，口令不对会直接抛错，而不是解出一堆乱码。
+// 旧版用的 sjcl 只在遇到老格式密文时才按需加载，新用户一个字节都不用下。
+// ---------------------------------------------------------------------------
+
+var PBKDF2_ITERATIONS = 250000;
+var PAYLOAD_VERSION = 2;
+
+var toBase64 = function(bytes) {
+  var chunk = 0x8000;
+  var parts = [];
+  for (var i = 0; i < bytes.length; i += chunk) {
+      parts.push(String.fromCharCode.apply(null, bytes.subarray(i, i + chunk)));
+  }
+  return btoa(parts.join(''));
+};
+
+var fromBase64 = function(text) {
+  var binary = atob(text);
+  var bytes = new Uint8Array(binary.length);
+  for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+};
+
+var requireCrypto = function() {
+  if (!window.crypto || !window.crypto.subtle) {
+      throw new Error('当前环境不支持 WebCrypto，请用 https 打开本页');
+  }
+};
+
+var deriveKey = function(password, salt) {
+  requireCrypto();
+  return crypto.subtle
+      .importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey'])
+      .then(function(base) {
+          return crypto.subtle.deriveKey(
+              { name: 'PBKDF2', salt: salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+              base,
+              { name: 'AES-GCM', length: 256 },
+              false,
+              ['encrypt', 'decrypt']
+          );
+      });
+};
+
+var encryptMessage = function(password, text) {
+  var salt = crypto.getRandomValues(new Uint8Array(16));
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  return deriveKey(password, salt)
+      .then(function(key) {
+          return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, new TextEncoder().encode(text));
+      })
+      .then(function(buffer) {
+          return JSON.stringify({
+              v: PAYLOAD_VERSION,
+              s: toBase64(salt),
+              i: toBase64(iv),
+              c: toBase64(new Uint8Array(buffer)),
+          });
+      });
+};
+
+var decryptMessage = function(password, payload) {
+  return deriveKey(password, fromBase64(payload.s))
+      .then(function(key) {
+          return crypto.subtle.decrypt(
+              { name: 'AES-GCM', iv: fromBase64(payload.i) },
+              key,
+              fromBase64(payload.c)
+          );
+      })
+      .then(function(buffer) { return new TextDecoder().decode(buffer); });
+};
+
+// 写入位置仍由口令的 SHA-256 决定。取 8 个大端有符号 int32，
+// 和旧版 sjcl.hash.sha256.hash 的输出逐字对齐，所以以前生成的图还能读。
+var sha256Words = function(password) {
+  requireCrypto();
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(password)).then(function(buffer) {
+      var view = new DataView(buffer);
+      var words = [];
+      for (var i = 0; i < 8; i++) words.push(view.getInt32(i * 4, false));
+      return words;
+  });
+};
+
+// 老格式（sjcl）密文才需要这个库，按需拉一次
+var sjclPromise = null;
+var loadSjcl = function() {
+  if (sjclPromise) return sjclPromise;
+  sjclPromise = new Promise(function(resolve, reject) {
+      var script = document.createElement('script');
+      script.src = 'sjcl.js';
+      script.onload = function() { resolve(window.sjcl); };
+      script.onerror = function() { reject(new Error('旧版解密库加载失败')); };
+      document.head.appendChild(script);
+  });
+  return sjclPromise;
+};
 
 // put image in the canvas and display it
 var importImage = function(e) {
@@ -48,65 +152,69 @@ var importImage = function(e) {
 };
 
 // encode the image and save it
-var encode = function() {
+var encode = async function() {
   var message = document.getElementById('message').value;
   var password = document.getElementById('password').value;
   var output = document.getElementById('output');
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
 
+  // exit early if the plaintext is above an artificial limit
+  if (message.length > maxMessageSize) {
+      alert('内容超过 ' + maxMessageSize + ' 字上限。');
+      return;
+  }
+
   // encrypt the message with supplied password if necessary
-  if (password.length > 0) {
-      message = sjcl.encrypt(password, message);
-  } else {
-      message = JSON.stringify({'text': message});
+  try {
+      message = password.length > 0
+          ? await encryptMessage(password, message)
+          : JSON.stringify({'text': message});
+  } catch (e) {
+      alert('加密失败：' + e.message);
+      return;
   }
 
   // exit early if the message is too big for the image
   var pixelCount = ctx.canvas.width * ctx.canvas.height;
   if ((message.length + 1) * 16 > pixelCount * 4 * 0.75) {
-      alert('Message is too big for the image.');
-      return;
-  }
-
-  // exit early if the message is above an artificial limit
-  if (message.length > maxMessageSize) {
-      alert('Message is too big.');
+      alert('这段内容太长，这张图装不下，换张大点的图。');
       return;
   }
 
   // encode the encrypted message with the supplied password
   var imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-  encodeMessage(imgData.data, sjcl.hash.sha256.hash(password), message);
+  encodeMessage(imgData.data, await sha256Words(password), message);
   ctx.putImageData(imgData, 0, 0);
 
   // view the new image
-  alert('Done! When the image appears, save and share it with someone.');
+  alert('写好了。下面出现的图片右键另存为，务必存 PNG。');
 
   output.src = canvas.toDataURL();
 
 };
 
 // decode the image and display the contents if there is anything
-var decode = function() {
+var decode = async function() {
   var password = document.getElementById('password2').value;
-  var passwordFail = 'Password is incorrect or there is nothing here.';
+  var passwordFail = '口令不对，或者这张图里没有藏东西。';
+
+  var showChoose = function() {
+      document.getElementById('choose').style.display = 'block';
+      document.getElementById('reveal').style.display = 'none';
+  };
 
   // decode the message with the supplied password
   var ctx = document.getElementById('canvas').getContext('2d');
   var imgData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-  var message = decodeMessage(imgData.data, sjcl.hash.sha256.hash(password));
+  var message = decodeMessage(imgData.data, await sha256Words(password));
 
   // try to parse the JSON
   var obj = null;
   try {
       obj = JSON.parse(message);
   } catch (e) {
-      // display the "choose" view
-
-      document.getElementById('choose').style.display = 'block';
-      document.getElementById('reveal').style.display = 'none';
-
+      showChoose();
       if (password.length > 0) {
           alert(passwordFail);
       }
@@ -114,17 +222,28 @@ var decode = function() {
 
   // display the "reveal" view
   if (obj) {
-      document.getElementById('choose').style.display = 'none';
-      document.getElementById('reveal').style.display = 'block';
-
       // decrypt if necessary
-      if (obj.ct) {
+      if (obj.v === PAYLOAD_VERSION && obj.c) {
+          if (!password.length) return showChoose();   // 加密过的图，先填口令
           try {
-              obj.text = sjcl.decrypt(password, message);
+              obj.text = await decryptMessage(password, obj);
           } catch (e) {
-              alert(passwordFail);
+              showChoose();
+              return alert(passwordFail);
+          }
+      } else if (obj.ct) {
+          // 老版本 sjcl 密文，这时候才去拉那个库
+          if (!password.length) return showChoose();
+          try {
+              obj.text = (await loadSjcl()).decrypt(password, message);
+          } catch (e) {
+              showChoose();
+              return alert(passwordFail);
           }
       }
+
+      document.getElementById('choose').style.display = 'none';
+      document.getElementById('reveal').style.display = 'block';
 
       // escape special characters
       var escChars = {
@@ -246,7 +365,7 @@ var decodeMessage = function(colors, hash) {
   }
 
   // exit early if the message is above an artificial limit
-  if (messageSize === 0 || messageSize > maxMessageSize) {
+  if (messageSize === 0 || messageSize > maxPayloadSize) {
       return '';
   }
 

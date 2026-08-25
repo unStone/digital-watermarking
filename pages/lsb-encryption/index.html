@@ -38,7 +38,7 @@
   <main class="wrap">
     <div class="page-head" data-section="08 — Encrypted steganography">
       <h1>LSB 隐写 · 口令加密</h1>
-      <p>写入前先用 SJCL 做 AES 加密，没有口令，就算知道算法也读不出内容。选图后会自动尝试解码；导出请务必用 PNG。</p>
+      <p>写入前先用浏览器原生的 AES-GCM 加密（口令走 PBKDF2 派生密钥），没有口令，就算知道算法也读不出内容。选图后会自动尝试解码；导出请务必用 PNG。</p>
     </div>
 
     <div class="note">
@@ -79,8 +79,8 @@
 
     <section class="principle-brief signal-grid" aria-labelledby="principle-title">
       <h2 id="principle-title">原理速览：先加密载荷，再打散写入像素</h2>
-      <p>口令通过 SHA-256 生成定位序列，载荷用 AES 加密后写入分散的颜色最低位。知道 LSB 算法仍不等于知道位置和明文。</p>
-      <ol class="signal-steps"><li><b>加密</b><span>AES 保护明文</span></li><li><b>定位</b><span>哈希生成写入顺序</span></li><li><b>写位</b><span>修改颜色最低位</span></li><li><b>解密</b><span>同口令恢复内容</span></li></ol>
+      <p>口令通过 SHA-256 生成定位序列，载荷用 AES-GCM 加密后写入分散的颜色最低位。GCM 自带认证：口令不对会直接报错，不会解出似是而非的乱码。</p>
+      <ol class="signal-steps"><li><b>加密</b><span>PBKDF2 + AES-GCM</span></li><li><b>定位</b><span>哈希生成写入顺序</span></li><li><b>写位</b><span>修改颜色最低位</span></li><li><b>解密</b><span>同口令恢复内容</span></li></ol>
       <div class="boundary-grid" aria-label="能力边界"><div class="boundary-item"><strong>能做</strong><p>在隐藏前加密载荷，并用相同口令恢复明文。</p></div><div class="boundary-item boundary-item--limit"><strong>不能做</strong><p>不能抵抗 JPEG 或缩放；口令遗失后也无法恢复内容。</p></div></div>
       <nav class="related-tools" aria-label="相关工具"><strong>继续实验</strong><div class="btn-row"><a class="btn" href="../lsb-order/">对比不加密的顺序编码</a><a class="btn" href="../fft/">对比频域水印</a></div></nav>
     </section>
@@ -92,7 +92,6 @@
   </main>
 
   <script src="../../assets/ui.js"></script>
-  <script src="sjcl.js"></script>
   <script src="index.js"></script>
 <!-- ld:start -->
 <script type="application/ld+json">
